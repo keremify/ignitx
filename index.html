@@ -638,22 +638,31 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-1"><span class="c-comment">// ── INSTATOOL: Non-Followers Detector ──────────────────────</span>
+        <pre id="code-1"><span class="c-comment">// ── IGNITX: Non-Followers Detector ─────────────────────────</span>
 <span class="c-comment">// Finds everyone you follow who does NOT follow you back.</span>
 
 (<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">userId</span> = document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in. Open this on instagram.com"</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-comment">// All requests need these headers or Instagram returns 401</span>
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = {
+    <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>,
+    <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>,
+    <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>,
+  };
+
   <span class="c-keyword">const</span> <span class="c-func">fetchList</span> = <span class="c-keyword">async</span> (<span class="c-var">type</span>) => {
     <span class="c-keyword">let</span> <span class="c-var">list</span> = [], <span class="c-var">after</span> = <span class="c-string">""</span>, <span class="c-var">hasNext</span> = <span class="c-keyword">true</span>;
-    <span class="c-keyword">const</span> <span class="c-var">userId</span> = window._sharedData?.config?.viewerId ||
-      document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
-    <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Could not get user ID. Are you logged in?"</span>); <span class="c-keyword">return</span> []; }
     <span class="c-keyword">while</span> (<span class="c-var">hasNext</span>) {
       <span class="c-keyword">const</span> <span class="c-var">url</span> = <span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">type</span>}/?count=200${<span class="c-var">after</span> ? "&max_id=" + <span class="c-var">after</span> : ""}`</span>;
-      <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-var">url</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+      <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-var">url</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+      <span class="c-keyword">if</span> (<span class="c-var">res</span>.status === <span class="c-string">"login_required"</span>) { console.error(<span class="c-string">"❌ Session expired. Refresh Instagram and try again."</span>); <span class="c-keyword">return</span> []; }
       <span class="c-var">list</span>.push(...(<span class="c-var">res</span>.users || []));
       <span class="c-var">hasNext</span> = !!<span class="c-var">res</span>.next_max_id;
       <span class="c-var">after</span> = <span class="c-var">res</span>.next_max_id || <span class="c-string">""</span>;
-      <span class="c-keyword">await</span> <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-num">500</span>));
+      <span class="c-keyword">await</span> <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-num">600</span>));
     }
     <span class="c-keyword">return</span> <span class="c-var">list</span>;
   };
@@ -670,7 +679,7 @@
   <span class="c-var">notFollowingBack</span>.forEach((<span class="c-var">u</span>, <span class="c-var">i</span>) => {
     console.log(<span class="c-string">`%c${<span class="c-var">i</span>+<span class="c-num">1</span>}. @${<span class="c-var">u</span>.username} — https://instagram.com/${<span class="c-var">u</span>.username}`</span>, <span class="c-string">"color:#c8f5d8"</span>);
   });
-  console.log(<span class="c-string">`\n%c✅ Done. Total following: ${<span class="c-var">following</span>.length} | Followers: ${<span class="c-var">followers</span>.length} | Not following back: ${<span class="c-var">notFollowingBack</span>.length}`</span>, <span class="c-string">"color:#00ff88;font-weight:bold"</span>);
+  console.log(<span class="c-string">`\n%c✅ Done. Following: ${<span class="c-var">following</span>.length} | Followers: ${<span class="c-var">followers</span>.length} | Not following back: ${<span class="c-var">notFollowingBack</span>.length}`</span>, <span class="c-string">"color:#00ff88;font-weight:bold"</span>);
 })();</pre>
       </div>
     </div>
@@ -697,26 +706,35 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-2"><span class="c-comment">// ── INSTATOOL: Follow a User's Followings ──────────────────</span>
-<span class="c-comment">// ⚠ Replace with your target username below:</span>
-<span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>;
-<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">3000</span>; <span class="c-comment">// 3 seconds between each follow (safe)</span>
+        <pre id="code-2"><span class="c-comment">// ── IGNITX: Follow a User's Followings ─────────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>; <span class="c-comment">// ⚠ replace this</span>
+<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">3600</span>; <span class="c-comment">// 3.6s = ~100 follows/hour max</span>
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">csrfToken</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-comment">// Step 1: Get target user ID</span>
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = {
+    <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>,
+    <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>,
+    <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>,
+  };
+
+  <span class="c-comment">// Step 1: Resolve username → user ID</span>
   console.log(<span class="c-string">"%c⏳ Looking up user..."</span>, <span class="c-string">"color:#00ff88"</span>);
-  <span class="c-keyword">const</span> <span class="c-var">userRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>,
-    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
-  <span class="c-keyword">const</span> <span class="c-var">targetId</span> = <span class="c-var">userRes</span>?.data?.user?.id;
+  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">targetId</span> = <span class="c-var">uRes</span>?.data?.user?.id;
   <span class="c-keyword">if</span> (!<span class="c-var">targetId</span>) { console.error(<span class="c-string">"❌ User not found. Check the username."</span>); <span class="c-keyword">return</span>; }
   console.log(<span class="c-string">`%c✅ Found @${<span class="c-var">TARGET_USERNAME</span>} (ID: ${<span class="c-var">targetId</span>})`</span>, <span class="c-string">"color:#00ff88"</span>);
 
   <span class="c-comment">// Step 2: Fetch their following list</span>
   <span class="c-keyword">let</span> <span class="c-var">toFollow</span> = [], <span class="c-var">after</span> = <span class="c-string">""</span>, <span class="c-var">hasNext</span> = <span class="c-keyword">true</span>;
   <span class="c-keyword">while</span> (<span class="c-var">hasNext</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">targetId</span>}/following/?count=200${<span class="c-var">after</span> ? "&max_id=" + <span class="c-var">after</span> : ""}`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(
+      <span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">targetId</span>}/following/?count=200${<span class="c-var">after</span> ? "&max_id=" + <span class="c-var">after</span> : ""}`</span>,
+      { headers: <span class="c-var">H</span> }
+    ).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
     <span class="c-var">toFollow</span>.push(...(<span class="c-var">res</span>.users || []));
     <span class="c-var">hasNext</span> = !!<span class="c-var">res</span>.next_max_id;
     <span class="c-var">after</span> = <span class="c-var">res</span>.next_max_id || <span class="c-string">""</span>;
@@ -724,14 +742,12 @@
   }
   console.log(<span class="c-string">`%c📋 Found ${<span class="c-var">toFollow</span>.length} users to follow`</span>, <span class="c-string">"color:#ffcc00"</span>);
 
-  <span class="c-comment">// Step 3: Follow each user with a delay</span>
-  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-comment">// Step 3: Follow each with delay</span>
+  <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
   <span class="c-keyword">let</span> <span class="c-var">followed</span> = <span class="c-num">0</span>, <span class="c-var">skipped</span> = <span class="c-num">0</span>;
   <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">user</span> <span class="c-keyword">of</span> <span class="c-var">toFollow</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/create/${<span class="c-var">user</span>.pk}/`</span>, {
-      method: <span class="c-string">"POST"</span>,
-      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
-    }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/create/${<span class="c-var">user</span>.pk}/`</span>,
+      { method: <span class="c-string">"POST"</span>, headers: <span class="c-var">postH</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
     <span class="c-keyword">if</span> (<span class="c-var">res</span>.friendship_status) {
       <span class="c-var">followed</span>++;
       console.log(<span class="c-string">`%c✓ Followed @${<span class="c-var">user</span>.username} [${<span class="c-var">followed</span>}/${<span class="c-var">toFollow</span>.length}]`</span>, <span class="c-string">"color:#00ff88"</span>);
@@ -766,10 +782,10 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-3"><span class="c-comment">// ── INSTATOOL: Mass Unfollow Non-Followers ─────────────────</span>
+        <pre id="code-3"><span class="c-comment">// ── IGNITX: Mass Unfollow Non-Followers ────────────────────</span>
 <span class="c-keyword">const</span> <span class="c-var">WHITELIST</span> = [<span class="c-string">"friend1"</span>, <span class="c-string">"brand_i_like"</span>]; <span class="c-comment">// never unfollow these</span>
 <span class="c-keyword">const</span> <span class="c-var">MAX_UNFOLLOW</span> = <span class="c-num">50</span>;  <span class="c-comment">// max per session — stay under 100/hour total</span>
-<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">3500</span>;
+<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">3600</span>;
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
@@ -777,10 +793,13 @@
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
+
   <span class="c-keyword">const</span> <span class="c-func">getList</span> = <span class="c-keyword">async</span> (<span class="c-var">type</span>) => {
     <span class="c-keyword">let</span> <span class="c-var">all</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
     <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
-      <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">type</span>}/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+      <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">type</span>}/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
       <span class="c-var">all</span>.push(...(<span class="c-var">r</span>.users || []));
       <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
       <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">600</span>);
@@ -798,10 +817,7 @@
   console.log(<span class="c-string">`%c🗑 Unfollowing ${<span class="c-var">targets</span>.length} accounts...`</span>, <span class="c-string">"color:#ff4466"</span>);
   <span class="c-keyword">let</span> <span class="c-var">count</span> = <span class="c-num">0</span>;
   <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">u</span> <span class="c-keyword">of</span> <span class="c-var">targets</span>) {
-    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/destroy/${<span class="c-var">u</span>.pk}/`</span>, {
-      method: <span class="c-string">"POST"</span>,
-      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
-    });
+    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/destroy/${<span class="c-var">u</span>.pk}/`</span>, { method: <span class="c-string">"POST"</span>, headers: <span class="c-var">postH</span> });
     <span class="c-var">count</span>++;
     console.log(<span class="c-string">`%c✗ Unfollowed @${<span class="c-var">u</span>.username} [${<span class="c-var">count</span>}/${<span class="c-var">targets</span>.length}]`</span>, <span class="c-string">"color:#ff4466"</span>);
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
@@ -832,29 +848,37 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-4"><span class="c-comment">// ── INSTATOOL: Export to CSV ────────────────────────────────</span>
+        <pre id="code-4"><span class="c-comment">// ── IGNITX: Export to CSV ───────────────────────────────────</span>
 <span class="c-keyword">const</span> <span class="c-var">EXPORT_TYPE</span> = <span class="c-string">"followers"</span>; <span class="c-comment">// "followers" or "following"</span>
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">userId</span> = document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
   <span class="c-keyword">let</span> <span class="c-var">list</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
+
   console.log(<span class="c-string">`%c⏳ Fetching ${<span class="c-var">EXPORT_TYPE</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">EXPORT_TYPE</span>}/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(
+      <span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">EXPORT_TYPE</span>}/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>,
+      { headers: <span class="c-var">H</span> }
+    ).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
     <span class="c-var">list</span>.push(...(<span class="c-var">r</span>.users || []));
     <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
-    <span class="c-keyword">await</span> <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-num">500</span>));
+    <span class="c-keyword">await</span> <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-num">600</span>));
   }
 
   <span class="c-keyword">const</span> <span class="c-var">csv</span> = [
-    <span class="c-string">"username,full_name,profile_url,is_private,followers"</span>,
-    ...<span class="c-var">list</span>.map(<span class="c-var">u</span> => <span class="c-string">`@${<span class="c-var">u</span>.username},"${<span class="c-var">u</span>.full_name || ""}",https://instagram.com/${<span class="c-var">u</span>.username},${<span class="c-var">u</span>.is_private},${<span class="c-var">u</span>.follower_count || ""}`</span>)
+    <span class="c-string">"username,full_name,profile_url,is_private,follower_count"</span>,
+    ...<span class="c-var">list</span>.map(<span class="c-var">u</span> => <span class="c-string">`@${<span class="c-var">u</span>.username},"${(<span class="c-var">u</span>.full_name||"").replace(/"/g,'""')}",https://instagram.com/${<span class="c-var">u</span>.username},${<span class="c-var">u</span>.is_private},${<span class="c-var">u</span>.follower_count||""}`</span>)
   ].join(<span class="c-string">"\n"</span>);
 
   <span class="c-keyword">const</span> <span class="c-var">blob</span> = <span class="c-keyword">new</span> Blob([<span class="c-var">csv</span>], { type: <span class="c-string">"text/csv"</span> });
   <span class="c-keyword">const</span> <span class="c-var">a</span> = Object.assign(document.createElement(<span class="c-string">"a"</span>), {
     href: URL.createObjectURL(<span class="c-var">blob</span>),
-    download: <span class="c-string">`instagram_${<span class="c-var">EXPORT_TYPE</span>}_${<span class="c-keyword">new</span> Date().toISOString().slice(<span class="c-num">0</span>,<span class="c-num">10</span>)}.csv`</span>
+    download: <span class="c-string">`ignitx_${<span class="c-var">EXPORT_TYPE</span>}_${<span class="c-keyword">new</span> Date().toISOString().slice(<span class="c-num">0</span>,<span class="c-num">10</span>)}.csv`</span>
   });
   document.body.appendChild(<span class="c-var">a</span>); <span class="c-var">a</span>.click(); <span class="c-var">a</span>.remove();
   console.log(<span class="c-string">`%c✅ Exported ${<span class="c-var">list</span>.length} ${<span class="c-var">EXPORT_TYPE</span>} to CSV!`</span>, <span class="c-string">"color:#00ff88;font-weight:bold"</span>);
@@ -888,7 +912,7 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-5"><span class="c-comment">// ── INSTATOOL: Like Tagged Posts of a User ─────────────────</span>
+        <pre id="code-5"><span class="c-comment">// ── IGNITX: Like Tagged Posts of a User ────────────────────</span>
 <span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>;
 <span class="c-keyword">const</span> <span class="c-var">MAX_LIKES</span> = <span class="c-num">30</span>;
 <span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">4000</span>;
@@ -896,10 +920,13 @@
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">csrfToken</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
 
   <span class="c-comment">// Get target user ID</span>
-  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>,
-    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
   <span class="c-keyword">const</span> <span class="c-var">targetId</span> = <span class="c-var">uRes</span>?.data?.user?.id;
   <span class="c-keyword">if</span> (!<span class="c-var">targetId</span>) { console.error(<span class="c-string">"❌ User not found."</span>); <span class="c-keyword">return</span>; }
   console.log(<span class="c-string">`%c✅ Found @${<span class="c-var">TARGET_USERNAME</span>}`</span>, <span class="c-string">"color:#00ff88"</span>);
@@ -907,7 +934,7 @@
   <span class="c-comment">// Fetch tagged posts</span>
   <span class="c-keyword">let</span> <span class="c-var">posts</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
   <span class="c-keyword">while</span> (<span class="c-var">more</span> && <span class="c-var">posts</span>.length < <span class="c-var">MAX_LIKES</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/usertags/${<span class="c-var">targetId</span>}/feed/?count=20${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/usertags/${<span class="c-var">targetId</span>}/feed/?count=20${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
     <span class="c-var">posts</span>.push(...(<span class="c-var">r</span>.items || []));
     <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">600</span>);
@@ -917,13 +944,10 @@
 
   <span class="c-keyword">let</span> <span class="c-var">liked</span> = <span class="c-num">0</span>;
   <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">post</span> <span class="c-keyword">of</span> <span class="c-var">posts</span>) {
-    <span class="c-keyword">if</span> (<span class="c-var">post</span>.has_liked) { console.log(<span class="c-string">`%c⟳ Already liked post ${<span class="c-var">post</span>.pk}`</span>, <span class="c-string">"color:#5a8a68"</span>); <span class="c-keyword">continue</span>; }
-    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/like/`</span>, {
-      method: <span class="c-string">"POST"</span>,
-      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
-    });
+    <span class="c-keyword">if</span> (<span class="c-var">post</span>.has_liked) { console.log(<span class="c-string">`%c⟳ Already liked`</span>, <span class="c-string">"color:#5a8a68"</span>); <span class="c-keyword">continue</span>; }
+    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/like/`</span>, { method: <span class="c-string">"POST"</span>, headers: <span class="c-var">postH</span> });
     <span class="c-var">liked</span>++;
-    console.log(<span class="c-string">`%c❤ Liked post ${<span class="c-var">liked</span>}/${<span class="c-var">posts</span>.length}`</span>, <span class="c-string">"color:#ff88cc"</span>);
+    console.log(<span class="c-string">`%c❤ Liked ${<span class="c-var">liked</span>}/${<span class="c-var">posts</span>.length}`</span>, <span class="c-string">"color:#ff88cc"</span>);
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
   }
   console.log(<span class="c-string">`%c✅ Done! Liked ${<span class="c-var">liked</span>} posts.`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
@@ -952,7 +976,7 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-6"><span class="c-comment">// ── INSTATOOL: Like Posts by Hashtag ───────────────────────</span>
+        <pre id="code-6"><span class="c-comment">// ── IGNITX: Like Posts by Hashtag ──────────────────────────</span>
 <span class="c-keyword">const</span> <span class="c-var">HASHTAG</span> = <span class="c-string">"streetphotography"</span>; <span class="c-comment">// no # symbol</span>
 <span class="c-keyword">const</span> <span class="c-var">MAX_LIKES</span> = <span class="c-num">20</span>;
 <span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">4500</span>;
@@ -960,16 +984,19 @@
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">csrfToken</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
 
   console.log(<span class="c-string">`%c⏳ Fetching posts for #${<span class="c-var">HASHTAG</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">const</span> <span class="c-var">feedRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/tags/${<span class="c-var">HASHTAG</span>}/sections/?tab=recent&count=50`</span>, {
-    method: <span class="c-string">"POST"</span>,
-    headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
+    method: <span class="c-string">"POST"</span>, headers: <span class="c-var">postH</span>
   }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
 
   <span class="c-keyword">const</span> <span class="c-var">posts</span> = [];
-  (<span class="c-var">feedRes</span>.sections || []).forEach(<span class="c-var">section</span> => {
-    (<span class="c-var">section</span>.layout_content?.medias || []).forEach(<span class="c-var">m</span> => <span class="c-var">posts</span>.push(<span class="c-var">m</span>.media));
+  (<span class="c-var">feedRes</span>.sections || []).forEach(<span class="c-var">s</span> => {
+    (<span class="c-var">s</span>.layout_content?.medias || []).forEach(<span class="c-var">m</span> => <span class="c-var">posts</span>.push(<span class="c-var">m</span>.media));
   });
 
   <span class="c-keyword">const</span> <span class="c-var">targets</span> = <span class="c-var">posts</span>.filter(<span class="c-var">p</span> => !<span class="c-var">p</span>.has_liked).slice(<span class="c-num">0</span>, <span class="c-var">MAX_LIKES</span>);
@@ -977,12 +1004,9 @@
 
   <span class="c-keyword">let</span> <span class="c-var">count</span> = <span class="c-num">0</span>;
   <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">post</span> <span class="c-keyword">of</span> <span class="c-var">targets</span>) {
-    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/like/`</span>, {
-      method: <span class="c-string">"POST"</span>,
-      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
-    });
+    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/like/`</span>, { method: <span class="c-string">"POST"</span>, headers: <span class="c-var">postH</span> });
     <span class="c-var">count</span>++;
-    console.log(<span class="c-string">`%c❤ [${<span class="c-var">count</span>}/${<span class="c-var">targets</span>.length}] Liked by @${<span class="c-var">post</span>.user?.username}`</span>, <span class="c-string">"color:#ff88cc"</span>);
+    console.log(<span class="c-string">`%c❤ [${<span class="c-var">count</span>}/${<span class="c-var">targets</span>.length}] by @${<span class="c-var">post</span>.user?.username}`</span>, <span class="c-string">"color:#ff88cc"</span>);
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
   }
   console.log(<span class="c-string">`%c✅ Done! ${<span class="c-var">count</span>} posts liked under #${<span class="c-var">HASHTAG</span>}`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
@@ -1016,38 +1040,37 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-7"><span class="c-comment">// ── INSTATOOL: Engagement Rate Calculator ──────────────────</span>
+        <pre id="code-7"><span class="c-comment">// ── IGNITX: Engagement Rate Calculator ─────────────────────</span>
 <span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>;
 
 (<span class="c-keyword">async</span> () => {
-  console.log(<span class="c-string">`%c📊 Analyzing @${<span class="c-var">TARGET_USERNAME</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
 
-  <span class="c-comment">// Get user data</span>
-  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>,
-    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  console.log(<span class="c-string">`%c📊 Analyzing @${<span class="c-var">TARGET_USERNAME</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
   <span class="c-keyword">const</span> <span class="c-var">user</span> = <span class="c-var">uRes</span>?.data?.user;
   <span class="c-keyword">if</span> (!<span class="c-var">user</span>) { console.error(<span class="c-string">"❌ User not found or account is private."</span>); <span class="c-keyword">return</span>; }
 
   <span class="c-keyword">const</span> <span class="c-var">followerCount</span> = <span class="c-var">user</span>.edge_followed_by.count;
   <span class="c-keyword">const</span> <span class="c-var">posts</span> = <span class="c-var">user</span>.edge_owner_to_timeline_media.edges.slice(<span class="c-num">0</span>, <span class="c-num">12</span>).map(<span class="c-var">e</span> => <span class="c-var">e</span>.node);
-
-  <span class="c-keyword">if</span> (<span class="c-var">posts</span>.length === <span class="c-num">0</span>) { console.warn(<span class="c-string">"⚠ No posts found."</span>); <span class="c-keyword">return</span>; }
+  <span class="c-keyword">if</span> (!<span class="c-var">posts</span>.length) { console.warn(<span class="c-string">"⚠ No posts found."</span>); <span class="c-keyword">return</span>; }
 
   <span class="c-keyword">const</span> <span class="c-var">totalLikes</span> = <span class="c-var">posts</span>.reduce((<span class="c-var">s</span>, <span class="c-var">p</span>) => <span class="c-var">s</span> + (<span class="c-var">p</span>.edge_media_preview_like?.count || <span class="c-num">0</span>), <span class="c-num">0</span>);
   <span class="c-keyword">const</span> <span class="c-var">totalComments</span> = <span class="c-var">posts</span>.reduce((<span class="c-var">s</span>, <span class="c-var">p</span>) => <span class="c-var">s</span> + (<span class="c-var">p</span>.edge_media_to_comment?.count || <span class="c-num">0</span>), <span class="c-num">0</span>);
   <span class="c-keyword">const</span> <span class="c-var">avgLikes</span> = Math.round(<span class="c-var">totalLikes</span> / <span class="c-var">posts</span>.length);
   <span class="c-keyword">const</span> <span class="c-var">avgComments</span> = Math.round(<span class="c-var">totalComments</span> / <span class="c-var">posts</span>.length);
   <span class="c-keyword">const</span> <span class="c-var">engRate</span> = ((<span class="c-var">totalLikes</span> + <span class="c-var">totalComments</span>) / (<span class="c-var">posts</span>.length * <span class="c-var">followerCount</span>) * <span class="c-num">100</span>).toFixed(<span class="c-num">2</span>);
-
   <span class="c-keyword">const</span> <span class="c-var">rating</span> = <span class="c-var">engRate</span> > <span class="c-num">6</span> ? <span class="c-string">"🔥 Excellent"</span> : <span class="c-var">engRate</span> > <span class="c-num">3</span> ? <span class="c-string">"✅ Good"</span> : <span class="c-var">engRate</span> > <span class="c-num">1</span> ? <span class="c-string">"⚠ Average"</span> : <span class="c-string">"❌ Low"</span>;
+
   console.log(<span class="c-string">`%c
 ┌─────────────────────────────────────┐
 │  📊 ENGAGEMENT REPORT: @${<span class="c-var">TARGET_USERNAME</span>}
 ├─────────────────────────────────────┤
-│  Followers:      ${<span class="c-var">followerCount</span>.toLocaleString()}
-│  Posts analyzed: ${<span class="c-var">posts</span>.length}
-│  Avg Likes:      ${<span class="c-var">avgLikes</span>.toLocaleString()}
-│  Avg Comments:   ${<span class="c-var">avgComments</span>.toLocaleString()}
+│  Followers:       ${<span class="c-var">followerCount</span>.toLocaleString()}
+│  Posts analyzed:  ${<span class="c-var">posts</span>.length}
+│  Avg Likes:       ${<span class="c-var">avgLikes</span>.toLocaleString()}
+│  Avg Comments:    ${<span class="c-var">avgComments</span>.toLocaleString()}
 │  Engagement Rate: ${<span class="c-var">engRate</span>}%  ${<span class="c-var">rating</span>}
 └─────────────────────────────────────┘`</span>, <span class="c-string">"color:#00ff88;font-family:monospace"</span>);
 })();</pre>
@@ -1075,38 +1098,39 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-8"><span class="c-comment">// ── INSTATOOL: Ghost Follower Finder ───────────────────────</span>
+        <pre id="code-8"><span class="c-comment">// ── IGNITX: Ghost Follower Finder ──────────────────────────</span>
 <span class="c-comment">// Checks which followers have NEVER liked any of your last 12 posts</span>
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
   <span class="c-keyword">const</span> <span class="c-var">userId</span> = document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-comment">// Get own username</span>
-  <span class="c-keyword">const</span> <span class="c-var">meRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/${<span class="c-var">userId</span>}/info/`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+
+  <span class="c-comment">// Get own username then posts</span>
+  <span class="c-keyword">const</span> <span class="c-var">meRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/${<span class="c-var">userId</span>}/info/`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
   <span class="c-keyword">const</span> <span class="c-var">myUsername</span> = <span class="c-var">meRes</span>?.user?.username;
 
-  <span class="c-comment">// Get my posts</span>
   console.log(<span class="c-string">"%c⏳ Fetching your recent posts..."</span>, <span class="c-string">"color:#00ff88"</span>);
-  <span class="c-keyword">const</span> <span class="c-var">profileRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">myUsername</span>}`</span>,
-    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">profileRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">myUsername</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
   <span class="c-keyword">const</span> <span class="c-var">posts</span> = <span class="c-var">profileRes</span>?.data?.user?.edge_owner_to_timeline_media?.edges?.slice(<span class="c-num">0</span>, <span class="c-num">12</span>) || [];
 
-  <span class="c-comment">// Collect all engagers (likers) across posts</span>
+  <span class="c-comment">// Collect all likers across posts</span>
   <span class="c-keyword">const</span> <span class="c-var">engagers</span> = <span class="c-keyword">new</span> Set();
   <span class="c-keyword">for</span> (<span class="c-keyword">const</span> { node: <span class="c-var">post</span> } <span class="c-keyword">of</span> <span class="c-var">posts</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">likers</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.id}/likers/`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    <span class="c-keyword">const</span> <span class="c-var">likers</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.id}/likers/`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
     (<span class="c-var">likers</span>.users || []).forEach(<span class="c-var">u</span> => <span class="c-var">engagers</span>.add(<span class="c-var">u</span>.pk));
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">400</span>);
   }
-  console.log(<span class="c-string">`%c📬 Unique engagers across last ${<span class="c-var">posts</span>.length} posts: ${<span class="c-var">engagers</span>.size}`</span>, <span class="c-string">"color:#00ff88"</span>);
+  console.log(<span class="c-string">`%c📬 Unique engagers: ${<span class="c-var">engagers</span>.size}`</span>, <span class="c-string">"color:#00ff88"</span>);
 
-  <span class="c-comment">// Get followers and find ghosts</span>
+  <span class="c-comment">// Load followers and find ghosts</span>
   console.log(<span class="c-string">"%c⏳ Loading followers..."</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">let</span> <span class="c-var">followers</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
   <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/followers/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/followers/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
     <span class="c-var">followers</span>.push(...(<span class="c-var">r</span>.users || []));
     <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">500</span>);
@@ -1115,7 +1139,7 @@
   <span class="c-keyword">const</span> <span class="c-var">ghosts</span> = <span class="c-var">followers</span>.filter(<span class="c-var">u</span> => !<span class="c-var">engagers</span>.has(<span class="c-var">u</span>.pk));
   console.log(<span class="c-string">`%c\n👻 GHOST FOLLOWERS (${<span class="c-var">ghosts</span>.length} of ${<span class="c-var">followers</span>.length}):\n`</span>, <span class="c-string">"color:#ff88cc;font-weight:bold"</span>);
   <span class="c-var">ghosts</span>.forEach((<span class="c-var">u</span>, <span class="c-var">i</span>) => console.log(<span class="c-string">`%c${<span class="c-var">i</span>+<span class="c-num">1</span>}. @${<span class="c-var">u</span>.username}`</span>, <span class="c-string">"color:#c8f5d8"</span>));
-  console.log(<span class="c-string">`%c\nGhost rate: ${((ghosts.length / followers.length) * 100).toFixed(1)}%`</span>, <span class="c-string">"color:#ffcc00"</span>);
+  console.log(<span class="c-string">`%c\nGhost rate: ${((<span class="c-var">ghosts</span>.length / <span class="c-var">followers</span>.length) * <span class="c-num">100</span>).toFixed(<span class="c-num">1</span>)}%`</span>, <span class="c-string">"color:#ffcc00"</span>);
 })();</pre>
       </div>
       <div class="warning-box">This tool defines "ghost" as anyone who didn't like your last 12 posts. Some real followers simply browse without liking — take this as a signal, not a verdict.</div>
@@ -1142,7 +1166,7 @@
           <span class="code-lang">javascript</span>
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
-        <pre id="code-9"><span class="c-comment">// ── INSTATOOL: Banned Hashtag Checker ──────────────────────</span>
+        <pre id="code-9"><span class="c-comment">// ── IGNITX: Banned Hashtag Checker ─────────────────────────</span>
 <span class="c-keyword">const</span> <span class="c-var">HASHTAGS</span> = [
   <span class="c-string">"photography"</span>, <span class="c-string">"fitness"</span>, <span class="c-string">"love"</span>, <span class="c-string">"instagood"</span>, <span class="c-string">"tbt"</span>
   <span class="c-comment">// ← add your hashtags here</span>
@@ -1150,13 +1174,15 @@
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
-  console.log(<span class="c-string">`%c🔍 Checking ${<span class="c-var">HASHTAGS</span>.length} hashtags...`</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
 
+  console.log(<span class="c-string">`%c🔍 Checking ${<span class="c-var">HASHTAGS</span>.length} hashtags...`</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">const</span> <span class="c-var">results</span> = { safe: [], restricted: [], banned: [] };
 
   <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">tag</span> <span class="c-keyword">of</span> <span class="c-var">HASHTAGS</span>) {
     <span class="c-keyword">try</span> {
-      <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/tags/${<span class="c-var">tag</span>}/info/`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+      <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/tags/${<span class="c-var">tag</span>}/info/`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
       <span class="c-keyword">if</span> (!<span class="c-var">res</span>.id) {
         <span class="c-var">results</span>.banned.push(<span class="c-var">tag</span>);
         console.log(<span class="c-string">`%c❌ BANNED     #${<span class="c-var">tag</span>}`</span>, <span class="c-string">"color:#ff4466"</span>);
@@ -1165,7 +1191,7 @@
         console.log(<span class="c-string">`%c⚠  RESTRICTED #${<span class="c-var">tag</span>}`</span>, <span class="c-string">"color:#ffcc00"</span>);
       } <span class="c-keyword">else</span> {
         <span class="c-var">results</span>.safe.push(<span class="c-var">tag</span>);
-        console.log(<span class="c-string">`%c✅ SAFE       #${<span class="c-var">tag</span>}  (${(<span class="c-var">res</span>.media_count || 0).toLocaleString()} posts)`</span>, <span class="c-string">"color:#00ff88"</span>);
+        console.log(<span class="c-string">`%c✅ SAFE       #${<span class="c-var">tag</span>}  (${(<span class="c-var">res</span>.media_count || <span class="c-num">0</span>).toLocaleString()} posts)`</span>, <span class="c-string">"color:#00ff88"</span>);
       }
     } <span class="c-keyword">catch</span> { <span class="c-var">results</span>.banned.push(<span class="c-var">tag</span>); }
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">800</span>);
@@ -1179,7 +1205,7 @@ SUMMARY
 ⚠  Restricted: ${<span class="c-var">results</span>.restricted.length}
 ❌ Banned:     ${<span class="c-var">results</span>.banned.length}
 
-Avoid these: ${[...<span class="c-var">results</span>.banned, ...<span class="c-var">results</span>.restricted].map(<span class="c-var">t</span> => '#' + <span class="c-var">t</span>).join(', ') || 'none'}
+Avoid: ${[...<span class="c-var">results</span>.banned, ...<span class="c-var">results</span>.restricted].map(<span class="c-var">t</span> => <span class="c-string">'#'</span> + <span class="c-var">t</span>).join(<span class="c-string">', '</span>) || <span class="c-string">'none'</span>}
 ━━━━━━━━━━━━━━━━━━━━━━━━`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
 })();</pre>
       </div>
