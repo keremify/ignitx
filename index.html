@@ -599,7 +599,8 @@
   <div class="how-to-box">
     <p>
       <strong>HOW TO USE:</strong> Open Instagram in your browser → Press <kbd>F12</kbd> or <kbd>Ctrl+Shift+J</kbd> (Windows) / <kbd>⌘+⌥+I</kbd> (Mac) to open DevTools → Click the <strong>Console</strong> tab → Copy any script below and paste it → Hit <kbd>Enter</kbd>.<br>
-      If you see a warning about pasting, type <strong>allow pasting</strong> first, then paste the script.
+      If you see a warning about pasting, type <strong>allow pasting</strong> first, then paste the script.<br>
+      <span style="color:var(--yellow)">⚠ <strong>Disable your ad blocker on instagram.com</strong> before running scripts — it interferes with Instagram's session and causes request errors.</span>
     </p>
   </div>
 </div>
@@ -1101,7 +1102,7 @@
           <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
         </div>
         <pre id="code-8"><span class="c-comment">// ── IGNITX: Ghost Follower Finder ──────────────────────────</span>
-<span class="c-comment">// Checks which followers have NEVER liked any of your last 12 posts</span>
+<span class="c-comment">// Finds followers who never liked any of your last 12 posts.</span>
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
@@ -1111,26 +1112,35 @@
 
   <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
 
-  <span class="c-comment">// Get own username via the current_user endpoint (more reliable)</span>
-  <span class="c-keyword">const</span> <span class="c-var">meRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/accounts/current_user/?edit=true`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
-  <span class="c-keyword">const</span> <span class="c-var">myUsername</span> = <span class="c-var">meRes</span>?.user?.username;
-  <span class="c-keyword">if</span> (!<span class="c-var">myUsername</span>) { console.error(<span class="c-string">"❌ Could not get your username. Make sure you're logged in."</span>); <span class="c-keyword">return</span>; }
-
+  <span class="c-comment">// Step 1: Get recent posts directly via userId (no username lookup needed)</span>
   console.log(<span class="c-string">"%c⏳ Fetching your recent posts..."</span>, <span class="c-string">"color:#00ff88"</span>);
-  <span class="c-keyword">const</span> <span class="c-var">profileRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">myUsername</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
-  <span class="c-keyword">const</span> <span class="c-var">posts</span> = <span class="c-var">profileRes</span>?.data?.user?.edge_owner_to_timeline_media?.edges?.slice(<span class="c-num">0</span>, <span class="c-num">12</span>) || [];
+  <span class="c-keyword">let</span> <span class="c-var">posts</span> = [], <span class="c-var">feedCursor</span> = <span class="c-string">""</span>, <span class="c-var">feedMore</span> = <span class="c-keyword">true</span>;
+  <span class="c-keyword">while</span> (<span class="c-var">feedMore</span> && <span class="c-var">posts</span>.length < <span class="c-num">12</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">feedRes</span> = <span class="c-keyword">await</span> fetch(
+      <span class="c-string">`https://www.instagram.com/api/v1/feed/user/${<span class="c-var">userId</span>}/?count=12${<span class="c-var">feedCursor</span> ? "&max_id=" + <span class="c-var">feedCursor</span> : ""}`</span>,
+      { headers: <span class="c-var">H</span> }
+    ).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    <span class="c-keyword">if</span> (!<span class="c-var">feedRes</span>.items) { console.error(<span class="c-string">"❌ Could not fetch your posts. Make sure you're on instagram.com"</span>); <span class="c-keyword">return</span>; }
+    <span class="c-var">posts</span>.push(...<span class="c-var">feedRes</span>.items);
+    <span class="c-var">feedMore</span> = !!<span class="c-var">feedRes</span>.next_max_id;
+    <span class="c-var">feedCursor</span> = <span class="c-var">feedRes</span>.next_max_id || <span class="c-string">""</span>;
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">500</span>);
+  }
+  <span class="c-var">posts</span> = <span class="c-var">posts</span>.slice(<span class="c-num">0</span>, <span class="c-num">12</span>);
+  console.log(<span class="c-string">`%c📸 Found ${<span class="c-var">posts</span>.length} recent posts`</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">if</span> (!<span class="c-var">posts</span>.length) { console.warn(<span class="c-string">"⚠ No posts found on this account."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-comment">// Collect all likers across posts</span>
+  <span class="c-comment">// Step 2: Collect all users who liked those posts</span>
   <span class="c-keyword">const</span> <span class="c-var">engagers</span> = <span class="c-keyword">new</span> Set();
-  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> { node: <span class="c-var">post</span> } <span class="c-keyword">of</span> <span class="c-var">posts</span>) {
-    <span class="c-keyword">const</span> <span class="c-var">likers</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.id}/likers/`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">post</span> <span class="c-keyword">of</span> <span class="c-var">posts</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">likers</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/likers/`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
     (<span class="c-var">likers</span>.users || []).forEach(<span class="c-var">u</span> => <span class="c-var">engagers</span>.add(<span class="c-var">u</span>.pk));
     <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">400</span>);
   }
-  console.log(<span class="c-string">`%c📬 Unique engagers: ${<span class="c-var">engagers</span>.size}`</span>, <span class="c-string">"color:#00ff88"</span>);
+  console.log(<span class="c-string">`%c💬 Unique engagers across ${<span class="c-var">posts</span>.length} posts: ${<span class="c-var">engagers</span>.size}`</span>, <span class="c-string">"color:#00ff88"</span>);
 
-  <span class="c-comment">// Load followers and find ghosts</span>
-  console.log(<span class="c-string">"%c⏳ Loading followers..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-comment">// Step 3: Load your followers and cross-reference</span>
+  console.log(<span class="c-string">"%c⏳ Loading your followers..."</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">let</span> <span class="c-var">followers</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
   <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
     <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/followers/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
@@ -1141,8 +1151,8 @@
 
   <span class="c-keyword">const</span> <span class="c-var">ghosts</span> = <span class="c-var">followers</span>.filter(<span class="c-var">u</span> => !<span class="c-var">engagers</span>.has(<span class="c-var">u</span>.pk));
   console.log(<span class="c-string">`%c\n👻 GHOST FOLLOWERS (${<span class="c-var">ghosts</span>.length} of ${<span class="c-var">followers</span>.length}):\n`</span>, <span class="c-string">"color:#ff88cc;font-weight:bold"</span>);
-  <span class="c-var">ghosts</span>.forEach((<span class="c-var">u</span>, <span class="c-var">i</span>) => console.log(<span class="c-string">`%c${<span class="c-var">i</span>+<span class="c-num">1</span>}. @${<span class="c-var">u</span>.username}`</span>, <span class="c-string">"color:#c8f5d8"</span>));
-  console.log(<span class="c-string">`%c\nGhost rate: ${((<span class="c-var">ghosts</span>.length / <span class="c-var">followers</span>.length) * <span class="c-num">100</span>).toFixed(<span class="c-num">1</span>)}%`</span>, <span class="c-string">"color:#ffcc00"</span>);
+  <span class="c-var">ghosts</span>.forEach((<span class="c-var">u</span>, <span class="c-var">i</span>) => console.log(<span class="c-string">`%c${<span class="c-var">i</span>+<span class="c-num">1</span>}. @${<span class="c-var">u</span>.username} — https://instagram.com/${<span class="c-var">u</span>.username}`</span>, <span class="c-string">"color:#c8f5d8"</span>));
+  console.log(<span class="c-string">`%c\nTotal followers: ${<span class="c-var">followers</span>.length} | Ghost rate: ${((<span class="c-var">ghosts</span>.length / <span class="c-var">followers</span>.length) * <span class="c-num">100</span>).toFixed(<span class="c-num">1</span>)}%`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
 })();</pre>
       </div>
       <div class="warning-box">This tool defines "ghost" as anyone who didn't like your last 12 posts. Some real followers simply browse without liking — take this as a signal, not a verdict.</div>
