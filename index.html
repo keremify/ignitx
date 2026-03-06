@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGNITX — Instagram Console Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff88;
+    --green-dim: #00cc66;
+    --green-glow: rgba(0, 255, 136, 0.15);
+    --green-faint: rgba(0, 255, 136, 0.05);
+    --bg: #050a06;
+    --bg2: #080f09;
+    --bg3: #0d1a0e;
+    --red: #ff4466;
+    --yellow: #ffcc00;
+    --blue: #00aaff;
+    --text: #c8f5d8;
+    --text-dim: #5a8a68;
+    --border: rgba(0, 255, 136, 0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* CRT scanlines overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Grid background */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image:
+      linear-gradient(var(--green-faint) 1px, transparent 1px),
+      linear-gradient(90deg, var(--green-faint) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── HEADER ─────────────────────────────── */
+  header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 60px 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(0,255,136,0.05) 0%, transparent 100%);
+  }
+
+  .logo-line {
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    animation: fadeIn 1s ease forwards;
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(36px, 8vw, 80px);
+    font-weight: 900;
+    color: var(--green);
+    text-shadow:
+      0 0 20px rgba(0,255,136,0.8),
+      0 0 60px rgba(0,255,136,0.4),
+      0 0 120px rgba(0,255,136,0.2);
+    letter-spacing: 8px;
+    animation: glitch 6s infinite;
+  }
+
+  @keyframes glitch {
+    0%, 92%, 100% { text-shadow: 0 0 20px rgba(0,255,136,0.8), 0 0 60px rgba(0,255,136,0.4); transform: none; }
+    93% { transform: translateX(-3px); text-shadow: -3px 0 var(--red), 3px 0 var(--blue); }
+    94% { transform: translateX(3px); text-shadow: 3px 0 var(--red), -3px 0 var(--blue); }
+    95% { transform: none; text-shadow: 0 0 20px rgba(0,255,136,0.8), 0 0 60px rgba(0,255,136,0.4); }
+  }
+
+  .tagline {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+  }
+
+  .tagline span { color: var(--green); }
+
+  .made-by {
+    margin-top: 12px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+  }
+  .keremify {
+    color: var(--green);
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-shadow: 0 0 8px rgba(0,255,136,0.5);
+  }
+  .how-to {
+    position: relative;
+    z-index: 10;
+    margin: 32px auto;
+    max-width: 900px;
+    padding: 0 20px;
+  }
+
+  .how-to-box {
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    padding: 20px 28px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .how-to-box::before {
+    content: '//';
+    color: var(--green);
+    font-size: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .how-to-box p {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  .how-to-box p strong {
+    color: var(--green);
+  }
+
+  kbd {
+    background: rgba(0,255,136,0.1);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+  }
+
+  /* ─── NAV TABS ───────────────────────────── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5, 10, 6, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 20px;
+  }
+
+  nav::-webkit-scrollbar { display: none; }
+
+  .nav-tab {
+    padding: 14px 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .nav-tab:hover { color: var(--green); }
+  .nav-tab.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+    text-shadow: 0 0 10px rgba(0,255,136,0.5);
+  }
+
+  /* ─── MAIN CONTENT ───────────────────────── */
+  main {
+    position: relative;
+    z-index: 10;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ─── TOOL CARD ──────────────────────────── */
+  .tool-section { display: none; }
+  .tool-section.active { display: block; }
+
+  .tool-card {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    margin-bottom: 32px;
+    animation: slideUp 0.4s ease forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  @keyframes slideUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tool-card:nth-child(1) { animation-delay: 0.05s; }
+  .tool-card:nth-child(2) { animation-delay: 0.1s; }
+  .tool-card:nth-child(3) { animation-delay: 0.15s; }
+
+  .tool-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .tool-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .tool-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    color: var(--green);
+    background: var(--green-glow);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    flex-shrink: 0;
+  }
+
+  .tool-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .tool-badge {
+    font-size: 10px;
+    padding: 3px 10px;
+    letter-spacing: 2px;
+    border: 1px solid;
+    flex-shrink: 0;
+  }
+
+  .badge-follow { color: var(--blue); border-color: rgba(0,170,255,0.4); background: rgba(0,170,255,0.07); }
+  .badge-engage { color: var(--yellow); border-color: rgba(255,204,0,0.4); background: rgba(255,204,0,0.07); }
+  .badge-analytics { color: #ff88cc; border-color: rgba(255,136,204,0.4); background: rgba(255,136,204,0.07); }
+
+  .tool-desc {
+    padding: 16px 24px;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tool-desc strong { color: var(--green-dim); }
+
+  /* ─── STEPS ──────────────────────────────── */
+  .steps {
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .step-num {
+    color: var(--green);
+    flex-shrink: 0;
+    font-size: 11px;
+  }
+
+  /* ─── CODE BLOCK ─────────────────────────── */
+  .code-block {
+    position: relative;
+    background: #020704;
+    border-top: 1px solid var(--border);
+  }
+
+  .code-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+
+  .code-lang {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .copy-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    background: transparent;
+    color: var(--green);
+    border: 1px solid var(--border);
+    padding: 5px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .copy-btn:hover {
+    background: var(--green-glow);
+    box-shadow: 0 0 12px rgba(0,255,136,0.2);
+  }
+
+  .copy-btn.copied {
+    color: var(--yellow);
+    border-color: rgba(255,204,0,0.4);
+  }
+
+  pre {
+    padding: 20px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #88c8a0;
+    overflow-x: auto;
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  pre::-webkit-scrollbar { width: 4px; height: 4px; }
+  pre::-webkit-scrollbar-track { background: transparent; }
+  pre::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .c-comment { color: #3a6a4a; }
+  .c-keyword { color: #00ff88; }
+  .c-string { color: #ffcc66; }
+  .c-func { color: #88ccff; }
+  .c-var { color: #ff88cc; }
+  .c-num { color: #ff9966; }
+
+  /* ─── WARNING BOX ────────────────────────── */
+  .warning-box {
+    margin: 24px 0 0;
+    border: 1px solid rgba(255,204,0,0.3);
+    background: rgba(255,204,0,0.04);
+    padding: 14px 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 12px;
+    color: rgba(255,204,0,0.8);
+    line-height: 1.6;
+  }
+
+  .warning-box::before { content: '⚠'; flex-shrink: 0; }
+
+  /* ─── FOOTER ─────────────────────────────── */
+  footer {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 32px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  footer span { color: var(--green); }
+
+  /* ─── ANIMATIONS ─────────────────────────── */
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  /* ─── TERMINAL CURSOR BLINK ──────────────── */
+  .blink {
+    animation: blink 1s step-end infinite;
+    color: var(--green);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ─── SCROLLBAR ──────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* ─── SAFETY GUIDE ───────────────────────── */
+  .safety-hero {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 28px;
+    border: 1px solid rgba(255,204,0,0.3);
+    background: rgba(255,204,0,0.04);
+    margin-bottom: 28px;
+    animation: slideUp 0.3s ease forwards;
+  }
+  .safety-hero-icon { font-size: 36px; flex-shrink: 0; line-height: 1; }
+  .safety-hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: var(--yellow);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  .safety-hero-sub { font-size: 13px; color: var(--text-dim); line-height: 1.8; }
+
+  .safety-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .safety-card {
+    border: 1px solid;
+    padding: 20px;
+    animation: slideUp 0.4s ease forwards;
+    opacity: 0;
+  }
+  .safety-card:nth-child(1) { animation-delay: 0.05s; }
+  .safety-card:nth-child(2) { animation-delay: 0.1s; }
+  .safety-card:nth-child(3) { animation-delay: 0.15s; }
+
+  .risk-low { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.03); }
+  .risk-mid { border-color: rgba(255,204,0,0.3); background: rgba(255,204,0,0.03); }
+  .risk-high { border-color: rgba(255,68,102,0.3); background: rgba(255,68,102,0.03); }
+
+  .risk-badge {
+    font-size: 9px;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+  }
+  .risk-low .risk-badge { color: var(--green); }
+  .risk-mid .risk-badge { color: var(--yellow); }
+  .risk-high .risk-badge { color: var(--red); }
+
+  .risk-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+  .risk-item { font-size: 12px; color: var(--text-dim); padding: 3px 0; }
+  .risk-desc { font-size: 11px; color: var(--text-dim); margin-top: 12px; line-height: 1.7; border-top: 1px solid var(--border); padding-top: 12px; }
+  .risk-desc strong { color: var(--text); }
+
+  /* Limits table */
+  .limits-block { margin-bottom: 28px; }
+  .limits-title {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--green);
+    margin-bottom: 12px;
+  }
+  .limits-table { border: 1px solid var(--border); }
+  .limit-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 2fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .limit-row:last-child { border-bottom: none; }
+  .limit-row span { padding: 12px 16px; border-right: 1px solid var(--border); }
+  .limit-row span:last-child { border-right: none; color: var(--text-dim); }
+  .limit-header { background: var(--bg3); font-size: 10px; letter-spacing: 2px; color: var(--text-dim); }
+  .safe { color: var(--green) !important; }
+  .warn { color: var(--yellow) !important; }
+  .danger { color: var(--red) !important; }
+
+  /* Rules */
+  .rules-block { margin-bottom: 28px; }
+  .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .rule-item {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+  .rule-item strong { color: var(--text); }
+  .rule-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    color: var(--border);
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  /* Disclaimer */
+  .disclaimer-box {
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    padding: 20px 24px;
+  }
+  .disclaimer-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .disclaimer-box p {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* ─── FOOTER UPDATE ──────────────────────── */
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .footer-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-shadow: 0 0 8px rgba(0,255,136,0.4);
+  }
+  .footer-sep { color: var(--border); }
+  .footer-note { font-size: 10px; color: var(--text-dim); opacity: 0.5; letter-spacing: 2px; margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    .limit-row { grid-template-columns: 1fr 1fr; }
+    .limit-row span:nth-child(3), .limit-row span:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-line">▸ INSTAGRAM CONSOLE TOOLKIT v1.0.0</div>
+  <div class="logo">IGNITX</div>
+  <div class="tagline">run powerful scripts directly in your browser <span>console</span> <span class="blink">_</span></div>
+  <div class="made-by">crafted by <span class="keremify">Keremify</span></div>
+</header>
+
+<div class="how-to">
+  <div class="how-to-box">
+    <p>
+      <strong>HOW TO USE:</strong> Open Instagram in your browser → Press <kbd>F12</kbd> or <kbd>Ctrl+Shift+J</kbd> (Windows) / <kbd>⌘+⌥+I</kbd> (Mac) to open DevTools → Click the <strong>Console</strong> tab → Copy any script below and paste it → Hit <kbd>Enter</kbd>.<br>
+      If you see a warning about pasting, type <strong>allow pasting</strong> first, then paste the script.
+    </p>
+  </div>
+</div>
+
+<nav>
+  <button class="nav-tab active" onclick="showTab('follow', this)">Follow Tools</button>
+  <button class="nav-tab" onclick="showTab('engage', this)">Engagement</button>
+  <button class="nav-tab" onclick="showTab('analytics', this)">Analytics</button>
+  <button class="nav-tab" onclick="showTab('safety', this)">⚠ Safety Guide</button>
+</nav>
+
+<main>
+
+  <!-- ═══════════ FOLLOW TOOLS ═══════════ -->
+  <section class="tool-section active" id="tab-follow">
+
+    <!-- Tool 1: Non-followers detector -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">01</span>
+          <span class="tool-name">NON-FOLLOWERS DETECTOR</span>
+        </div>
+        <span class="tool-badge badge-follow">FOLLOW</span>
+      </div>
+      <div class="tool-desc">
+        Scans your <strong>entire following list</strong> and compares it against your followers. Outputs a clean, sorted list of every account that doesn't follow you back — with their usernames and profile links.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Go to instagram.com and make sure you're logged in</div>
+        <div class="step"><span class="step-num">02 ›</span> Open the console and paste the script below</div>
+        <div class="step"><span class="step-num">03 ›</span> Wait for the scan to finish — a list will appear in the console</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-1"><span class="c-comment">// ── INSTATOOL: Non-Followers Detector ──────────────────────</span>
+<span class="c-comment">// Finds everyone you follow who does NOT follow you back.</span>
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-func">fetchList</span> = <span class="c-keyword">async</span> (<span class="c-var">type</span>) => {
+    <span class="c-keyword">let</span> <span class="c-var">list</span> = [], <span class="c-var">after</span> = <span class="c-string">""</span>, <span class="c-var">hasNext</span> = <span class="c-keyword">true</span>;
+    <span class="c-keyword">const</span> <span class="c-var">userId</span> = window._sharedData?.config?.viewerId ||
+      document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+    <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Could not get user ID. Are you logged in?"</span>); <span class="c-keyword">return</span> []; }
+    <span class="c-keyword">while</span> (<span class="c-var">hasNext</span>) {
+      <span class="c-keyword">const</span> <span class="c-var">url</span> = <span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">type</span>}/?count=200${<span class="c-var">after</span> ? "&max_id=" + <span class="c-var">after</span> : ""}`</span>;
+      <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-var">url</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+      <span class="c-var">list</span>.push(...(<span class="c-var">res</span>.users || []));
+      <span class="c-var">hasNext</span> = !!<span class="c-var">res</span>.next_max_id;
+      <span class="c-var">after</span> = <span class="c-var">res</span>.next_max_id || <span class="c-string">""</span>;
+      <span class="c-keyword">await</span> <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-num">500</span>));
+    }
+    <span class="c-keyword">return</span> <span class="c-var">list</span>;
+  };
+
+  console.log(<span class="c-string">"%c⏳ Fetching your following list..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">following</span> = <span class="c-keyword">await</span> <span class="c-func">fetchList</span>(<span class="c-string">"following"</span>);
+  console.log(<span class="c-string">"%c⏳ Fetching your followers list..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">followers</span> = <span class="c-keyword">await</span> <span class="c-func">fetchList</span>(<span class="c-string">"followers"</span>);
+
+  <span class="c-keyword">const</span> <span class="c-var">followerSet</span> = <span class="c-keyword">new</span> Set(<span class="c-var">followers</span>.map(<span class="c-var">u</span> => <span class="c-var">u</span>.pk));
+  <span class="c-keyword">const</span> <span class="c-var">notFollowingBack</span> = <span class="c-var">following</span>.filter(<span class="c-var">u</span> => !<span class="c-var">followerSet</span>.has(<span class="c-var">u</span>.pk));
+
+  console.log(<span class="c-string">`%c\n📊 RESULTS: ${<span class="c-var">notFollowingBack</span>.length} accounts not following you back:\n`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
+  <span class="c-var">notFollowingBack</span>.forEach((<span class="c-var">u</span>, <span class="c-var">i</span>) => {
+    console.log(<span class="c-string">`%c${<span class="c-var">i</span>+<span class="c-num">1</span>}. @${<span class="c-var">u</span>.username} — https://instagram.com/${<span class="c-var">u</span>.username}`</span>, <span class="c-string">"color:#c8f5d8"</span>);
+  });
+  console.log(<span class="c-string">`\n%c✅ Done. Total following: ${<span class="c-var">following</span>.length} | Followers: ${<span class="c-var">followers</span>.length} | Not following back: ${<span class="c-var">notFollowingBack</span>.length}`</span>, <span class="c-string">"color:#00ff88;font-weight:bold"</span>);
+})();</pre>
+      </div>
+    </div>
+
+    <!-- Tool 2: Follow user's followings -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">02</span>
+          <span class="tool-name">FOLLOW A USER'S FOLLOWINGS</span>
+        </div>
+        <span class="tool-badge badge-follow">FOLLOW</span>
+      </div>
+      <div class="tool-desc">
+        Enter a target username and this script will <strong>bulk follow everyone that user follows</strong>. Built-in delays keep the action safe and human-like to avoid Instagram rate limits.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Replace <strong>TARGET_USERNAME</strong> in the script with the account you want to clone follows from</div>
+        <div class="step"><span class="step-num">02 ›</span> Paste into the console while logged in on Instagram</div>
+        <div class="step"><span class="step-num">03 ›</span> The script follows ~200 users with safe delays — run again for more</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-2"><span class="c-comment">// ── INSTATOOL: Follow a User's Followings ──────────────────</span>
+<span class="c-comment">// ⚠ Replace with your target username below:</span>
+<span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>;
+<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">3000</span>; <span class="c-comment">// 3 seconds between each follow (safe)</span>
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+
+  <span class="c-comment">// Step 1: Get target user ID</span>
+  console.log(<span class="c-string">"%c⏳ Looking up user..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">userRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>,
+    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">targetId</span> = <span class="c-var">userRes</span>?.data?.user?.id;
+  <span class="c-keyword">if</span> (!<span class="c-var">targetId</span>) { console.error(<span class="c-string">"❌ User not found. Check the username."</span>); <span class="c-keyword">return</span>; }
+  console.log(<span class="c-string">`%c✅ Found @${<span class="c-var">TARGET_USERNAME</span>} (ID: ${<span class="c-var">targetId</span>})`</span>, <span class="c-string">"color:#00ff88"</span>);
+
+  <span class="c-comment">// Step 2: Fetch their following list</span>
+  <span class="c-keyword">let</span> <span class="c-var">toFollow</span> = [], <span class="c-var">after</span> = <span class="c-string">""</span>, <span class="c-var">hasNext</span> = <span class="c-keyword">true</span>;
+  <span class="c-keyword">while</span> (<span class="c-var">hasNext</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">targetId</span>}/following/?count=200${<span class="c-var">after</span> ? "&max_id=" + <span class="c-var">after</span> : ""}`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    <span class="c-var">toFollow</span>.push(...(<span class="c-var">res</span>.users || []));
+    <span class="c-var">hasNext</span> = !!<span class="c-var">res</span>.next_max_id;
+    <span class="c-var">after</span> = <span class="c-var">res</span>.next_max_id || <span class="c-string">""</span>;
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">800</span>);
+  }
+  console.log(<span class="c-string">`%c📋 Found ${<span class="c-var">toFollow</span>.length} users to follow`</span>, <span class="c-string">"color:#ffcc00"</span>);
+
+  <span class="c-comment">// Step 3: Follow each user with a delay</span>
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">let</span> <span class="c-var">followed</span> = <span class="c-num">0</span>, <span class="c-var">skipped</span> = <span class="c-num">0</span>;
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">user</span> <span class="c-keyword">of</span> <span class="c-var">toFollow</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/create/${<span class="c-var">user</span>.pk}/`</span>, {
+      method: <span class="c-string">"POST"</span>,
+      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
+    }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    <span class="c-keyword">if</span> (<span class="c-var">res</span>.friendship_status) {
+      <span class="c-var">followed</span>++;
+      console.log(<span class="c-string">`%c✓ Followed @${<span class="c-var">user</span>.username} [${<span class="c-var">followed</span>}/${<span class="c-var">toFollow</span>.length}]`</span>, <span class="c-string">"color:#00ff88"</span>);
+    } <span class="c-keyword">else</span> { <span class="c-var">skipped</span>++; }
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
+  }
+  console.log(<span class="c-string">`%c\n✅ Done! Followed: ${<span class="c-var">followed</span>} | Skipped: ${<span class="c-var">skipped</span>}`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
+})();</pre>
+      </div>
+      <div class="warning-box">Following too many accounts too quickly may trigger Instagram's rate limiter. The default 3-second delay is recommended. Do not run this more than once per hour.</div>
+    </div>
+
+    <!-- Tool 3: Mass unfollow -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">03</span>
+          <span class="tool-name">MASS UNFOLLOW NON-FOLLOWERS</span>
+        </div>
+        <span class="tool-badge badge-follow">FOLLOW</span>
+      </div>
+      <div class="tool-desc">
+        Automatically unfollows everyone who <strong>doesn't follow you back</strong>. Supports a whitelist — add usernames you never want to unfollow (friends, brands) to keep them safe.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Add any usernames you want to keep to the <strong>WHITELIST</strong> array</div>
+        <div class="step"><span class="step-num">02 ›</span> Set <strong>MAX_UNFOLLOW</strong> to cap how many to unfollow in one session</div>
+        <div class="step"><span class="step-num">03 ›</span> Paste and run — sit back and watch</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-3"><span class="c-comment">// ── INSTATOOL: Mass Unfollow Non-Followers ─────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">WHITELIST</span> = [<span class="c-string">"friend1"</span>, <span class="c-string">"brand_i_like"</span>]; <span class="c-comment">// never unfollow these</span>
+<span class="c-keyword">const</span> <span class="c-var">MAX_UNFOLLOW</span> = <span class="c-num">50</span>;  <span class="c-comment">// max per session — stay under 100/hour total</span>
+<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">3500</span>;
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+  <span class="c-keyword">const</span> <span class="c-var">userId</span> = document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-keyword">const</span> <span class="c-func">getList</span> = <span class="c-keyword">async</span> (<span class="c-var">type</span>) => {
+    <span class="c-keyword">let</span> <span class="c-var">all</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
+    <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
+      <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">type</span>}/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+      <span class="c-var">all</span>.push(...(<span class="c-var">r</span>.users || []));
+      <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
+      <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">600</span>);
+    }
+    <span class="c-keyword">return</span> <span class="c-var">all</span>;
+  };
+
+  console.log(<span class="c-string">"%c⏳ Loading lists..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> [<span class="c-var">following</span>, <span class="c-var">followers</span>] = <span class="c-keyword">await</span> Promise.all([<span class="c-func">getList</span>(<span class="c-string">"following"</span>), <span class="c-func">getList</span>(<span class="c-string">"followers"</span>)]);
+  <span class="c-keyword">const</span> <span class="c-var">followerIds</span> = <span class="c-keyword">new</span> Set(<span class="c-var">followers</span>.map(<span class="c-var">u</span> => <span class="c-var">u</span>.pk));
+  <span class="c-keyword">const</span> <span class="c-var">targets</span> = <span class="c-var">following</span>
+    .filter(<span class="c-var">u</span> => !<span class="c-var">followerIds</span>.has(<span class="c-var">u</span>.pk) && !<span class="c-var">WHITELIST</span>.includes(<span class="c-var">u</span>.username))
+    .slice(<span class="c-num">0</span>, <span class="c-var">MAX_UNFOLLOW</span>);
+
+  console.log(<span class="c-string">`%c🗑 Unfollowing ${<span class="c-var">targets</span>.length} accounts...`</span>, <span class="c-string">"color:#ff4466"</span>);
+  <span class="c-keyword">let</span> <span class="c-var">count</span> = <span class="c-num">0</span>;
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">u</span> <span class="c-keyword">of</span> <span class="c-var">targets</span>) {
+    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/destroy/${<span class="c-var">u</span>.pk}/`</span>, {
+      method: <span class="c-string">"POST"</span>,
+      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
+    });
+    <span class="c-var">count</span>++;
+    console.log(<span class="c-string">`%c✗ Unfollowed @${<span class="c-var">u</span>.username} [${<span class="c-var">count</span>}/${<span class="c-var">targets</span>.length}]`</span>, <span class="c-string">"color:#ff4466"</span>);
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
+  }
+  console.log(<span class="c-string">`%c✅ Session complete. Unfollowed ${<span class="c-var">count</span>} accounts.`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
+})();</pre>
+      </div>
+    </div>
+
+    <!-- Tool 4: Export to CSV -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">04</span>
+          <span class="tool-name">EXPORT FOLLOWERS / FOLLOWING TO CSV</span>
+        </div>
+        <span class="tool-badge badge-follow">FOLLOW</span>
+      </div>
+      <div class="tool-desc">
+        Downloads your complete <strong>followers and following lists</strong> as a CSV file to your computer. Includes username, full name, and profile URL for every account.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Choose to export <strong>"followers"</strong> or <strong>"following"</strong> by editing the EXPORT_TYPE variable</div>
+        <div class="step"><span class="step-num">02 ›</span> Paste the script — a .csv file will automatically download when done</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-4"><span class="c-comment">// ── INSTATOOL: Export to CSV ────────────────────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">EXPORT_TYPE</span> = <span class="c-string">"followers"</span>; <span class="c-comment">// "followers" or "following"</span>
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">userId</span> = document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">let</span> <span class="c-var">list</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
+  console.log(<span class="c-string">`%c⏳ Fetching ${<span class="c-var">EXPORT_TYPE</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/${<span class="c-var">EXPORT_TYPE</span>}/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+    <span class="c-var">list</span>.push(...(<span class="c-var">r</span>.users || []));
+    <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
+    <span class="c-keyword">await</span> <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-num">500</span>));
+  }
+
+  <span class="c-keyword">const</span> <span class="c-var">csv</span> = [
+    <span class="c-string">"username,full_name,profile_url,is_private,followers"</span>,
+    ...<span class="c-var">list</span>.map(<span class="c-var">u</span> => <span class="c-string">`@${<span class="c-var">u</span>.username},"${<span class="c-var">u</span>.full_name || ""}",https://instagram.com/${<span class="c-var">u</span>.username},${<span class="c-var">u</span>.is_private},${<span class="c-var">u</span>.follower_count || ""}`</span>)
+  ].join(<span class="c-string">"\n"</span>);
+
+  <span class="c-keyword">const</span> <span class="c-var">blob</span> = <span class="c-keyword">new</span> Blob([<span class="c-var">csv</span>], { type: <span class="c-string">"text/csv"</span> });
+  <span class="c-keyword">const</span> <span class="c-var">a</span> = Object.assign(document.createElement(<span class="c-string">"a"</span>), {
+    href: URL.createObjectURL(<span class="c-var">blob</span>),
+    download: <span class="c-string">`instagram_${<span class="c-var">EXPORT_TYPE</span>}_${<span class="c-keyword">new</span> Date().toISOString().slice(<span class="c-num">0</span>,<span class="c-num">10</span>)}.csv`</span>
+  });
+  document.body.appendChild(<span class="c-var">a</span>); <span class="c-var">a</span>.click(); <span class="c-var">a</span>.remove();
+  console.log(<span class="c-string">`%c✅ Exported ${<span class="c-var">list</span>.length} ${<span class="c-var">EXPORT_TYPE</span>} to CSV!`</span>, <span class="c-string">"color:#00ff88;font-weight:bold"</span>);
+})();</pre>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ ENGAGEMENT ═══════════ -->
+  <section class="tool-section" id="tab-engage">
+
+    <!-- Tool 5: Like tagged posts -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">05</span>
+          <span class="tool-name">LIKE TAGGED POSTS OF A USER</span>
+        </div>
+        <span class="tool-badge badge-engage">ENGAGE</span>
+      </div>
+      <div class="tool-desc">
+        Automatically likes all posts that a specific user is <strong>tagged in</strong>. Great for boosting engagement with collaborators or showing support. Set a limit to control how many posts to like.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Set <strong>TARGET_USERNAME</strong> to the account whose tagged posts you want to like</div>
+        <div class="step"><span class="step-num">02 ›</span> Set <strong>MAX_LIKES</strong> to limit how many posts to like in one session</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-5"><span class="c-comment">// ── INSTATOOL: Like Tagged Posts of a User ─────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>;
+<span class="c-keyword">const</span> <span class="c-var">MAX_LIKES</span> = <span class="c-num">30</span>;
+<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">4000</span>;
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+
+  <span class="c-comment">// Get target user ID</span>
+  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>,
+    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">targetId</span> = <span class="c-var">uRes</span>?.data?.user?.id;
+  <span class="c-keyword">if</span> (!<span class="c-var">targetId</span>) { console.error(<span class="c-string">"❌ User not found."</span>); <span class="c-keyword">return</span>; }
+  console.log(<span class="c-string">`%c✅ Found @${<span class="c-var">TARGET_USERNAME</span>}`</span>, <span class="c-string">"color:#00ff88"</span>);
+
+  <span class="c-comment">// Fetch tagged posts</span>
+  <span class="c-keyword">let</span> <span class="c-var">posts</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
+  <span class="c-keyword">while</span> (<span class="c-var">more</span> && <span class="c-var">posts</span>.length < <span class="c-var">MAX_LIKES</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/usertags/${<span class="c-var">targetId</span>}/feed/?count=20${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+    <span class="c-var">posts</span>.push(...(<span class="c-var">r</span>.items || []));
+    <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">600</span>);
+  }
+  <span class="c-var">posts</span> = <span class="c-var">posts</span>.slice(<span class="c-num">0</span>, <span class="c-var">MAX_LIKES</span>);
+  console.log(<span class="c-string">`%c❤ Liking ${<span class="c-var">posts</span>.length} tagged posts...`</span>, <span class="c-string">"color:#ff4466"</span>);
+
+  <span class="c-keyword">let</span> <span class="c-var">liked</span> = <span class="c-num">0</span>;
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">post</span> <span class="c-keyword">of</span> <span class="c-var">posts</span>) {
+    <span class="c-keyword">if</span> (<span class="c-var">post</span>.has_liked) { console.log(<span class="c-string">`%c⟳ Already liked post ${<span class="c-var">post</span>.pk}`</span>, <span class="c-string">"color:#5a8a68"</span>); <span class="c-keyword">continue</span>; }
+    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/like/`</span>, {
+      method: <span class="c-string">"POST"</span>,
+      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
+    });
+    <span class="c-var">liked</span>++;
+    console.log(<span class="c-string">`%c❤ Liked post ${<span class="c-var">liked</span>}/${<span class="c-var">posts</span>.length}`</span>, <span class="c-string">"color:#ff88cc"</span>);
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
+  }
+  console.log(<span class="c-string">`%c✅ Done! Liked ${<span class="c-var">liked</span>} posts.`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
+})();</pre>
+      </div>
+    </div>
+
+    <!-- Tool 6: Like by hashtag -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">06</span>
+          <span class="tool-name">LIKE POSTS BY HASHTAG</span>
+        </div>
+        <span class="tool-badge badge-engage">ENGAGE</span>
+      </div>
+      <div class="tool-desc">
+        Enter a hashtag and like the most recent posts under it. Perfect for <strong>niche engagement</strong> — liking posts in your space attracts targeted followers back to your profile.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Set <strong>HASHTAG</strong> (without the # symbol)</div>
+        <div class="step"><span class="step-num">02 ›</span> Set <strong>MAX_LIKES</strong> and run — it targets recent posts first</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-6"><span class="c-comment">// ── INSTATOOL: Like Posts by Hashtag ───────────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">HASHTAG</span> = <span class="c-string">"streetphotography"</span>; <span class="c-comment">// no # symbol</span>
+<span class="c-keyword">const</span> <span class="c-var">MAX_LIKES</span> = <span class="c-num">20</span>;
+<span class="c-keyword">const</span> <span class="c-var">DELAY_MS</span> = <span class="c-num">4500</span>;
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+  <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
+
+  console.log(<span class="c-string">`%c⏳ Fetching posts for #${<span class="c-var">HASHTAG</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">feedRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/tags/${<span class="c-var">HASHTAG</span>}/sections/?tab=recent&count=50`</span>, {
+    method: <span class="c-string">"POST"</span>,
+    headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
+  }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+
+  <span class="c-keyword">const</span> <span class="c-var">posts</span> = [];
+  (<span class="c-var">feedRes</span>.sections || []).forEach(<span class="c-var">section</span> => {
+    (<span class="c-var">section</span>.layout_content?.medias || []).forEach(<span class="c-var">m</span> => <span class="c-var">posts</span>.push(<span class="c-var">m</span>.media));
+  });
+
+  <span class="c-keyword">const</span> <span class="c-var">targets</span> = <span class="c-var">posts</span>.filter(<span class="c-var">p</span> => !<span class="c-var">p</span>.has_liked).slice(<span class="c-num">0</span>, <span class="c-var">MAX_LIKES</span>);
+  console.log(<span class="c-string">`%c❤ Liking ${<span class="c-var">targets</span>.length} posts under #${<span class="c-var">HASHTAG</span>}...`</span>, <span class="c-string">"color:#ff88cc"</span>);
+
+  <span class="c-keyword">let</span> <span class="c-var">count</span> = <span class="c-num">0</span>;
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">post</span> <span class="c-keyword">of</span> <span class="c-var">targets</span>) {
+    <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.pk}/like/`</span>, {
+      method: <span class="c-string">"POST"</span>,
+      headers: { <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> }
+    });
+    <span class="c-var">count</span>++;
+    console.log(<span class="c-string">`%c❤ [${<span class="c-var">count</span>}/${<span class="c-var">targets</span>.length}] Liked by @${<span class="c-var">post</span>.user?.username}`</span>, <span class="c-string">"color:#ff88cc"</span>);
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-var">DELAY_MS</span>);
+  }
+  console.log(<span class="c-string">`%c✅ Done! ${<span class="c-var">count</span>} posts liked under #${<span class="c-var">HASHTAG</span>}`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
+})();</pre>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ ANALYTICS ═══════════ -->
+  <section class="tool-section" id="tab-analytics">
+
+    <!-- Tool 7: Engagement Rate Calculator -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">07</span>
+          <span class="tool-name">ENGAGEMENT RATE CALCULATOR</span>
+        </div>
+        <span class="tool-badge badge-analytics">ANALYTICS</span>
+      </div>
+      <div class="tool-desc">
+        Calculates the <strong>true engagement rate</strong> of any public account based on their last 12 posts. Outputs avg likes, avg comments, follower count, and final ER% — useful for vetting collaboration partners.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Set <strong>TARGET_USERNAME</strong> to any public account</div>
+        <div class="step"><span class="step-num">02 ›</span> Results show avg likes, comments, and engagement rate %</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-7"><span class="c-comment">// ── INSTATOOL: Engagement Rate Calculator ──────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">TARGET_USERNAME</span> = <span class="c-string">"TARGET_USERNAME"</span>;
+
+(<span class="c-keyword">async</span> () => {
+  console.log(<span class="c-string">`%c📊 Analyzing @${<span class="c-var">TARGET_USERNAME</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
+
+  <span class="c-comment">// Get user data</span>
+  <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>,
+    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">user</span> = <span class="c-var">uRes</span>?.data?.user;
+  <span class="c-keyword">if</span> (!<span class="c-var">user</span>) { console.error(<span class="c-string">"❌ User not found or account is private."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-keyword">const</span> <span class="c-var">followerCount</span> = <span class="c-var">user</span>.edge_followed_by.count;
+  <span class="c-keyword">const</span> <span class="c-var">posts</span> = <span class="c-var">user</span>.edge_owner_to_timeline_media.edges.slice(<span class="c-num">0</span>, <span class="c-num">12</span>).map(<span class="c-var">e</span> => <span class="c-var">e</span>.node);
+
+  <span class="c-keyword">if</span> (<span class="c-var">posts</span>.length === <span class="c-num">0</span>) { console.warn(<span class="c-string">"⚠ No posts found."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-keyword">const</span> <span class="c-var">totalLikes</span> = <span class="c-var">posts</span>.reduce((<span class="c-var">s</span>, <span class="c-var">p</span>) => <span class="c-var">s</span> + (<span class="c-var">p</span>.edge_media_preview_like?.count || <span class="c-num">0</span>), <span class="c-num">0</span>);
+  <span class="c-keyword">const</span> <span class="c-var">totalComments</span> = <span class="c-var">posts</span>.reduce((<span class="c-var">s</span>, <span class="c-var">p</span>) => <span class="c-var">s</span> + (<span class="c-var">p</span>.edge_media_to_comment?.count || <span class="c-num">0</span>), <span class="c-num">0</span>);
+  <span class="c-keyword">const</span> <span class="c-var">avgLikes</span> = Math.round(<span class="c-var">totalLikes</span> / <span class="c-var">posts</span>.length);
+  <span class="c-keyword">const</span> <span class="c-var">avgComments</span> = Math.round(<span class="c-var">totalComments</span> / <span class="c-var">posts</span>.length);
+  <span class="c-keyword">const</span> <span class="c-var">engRate</span> = ((<span class="c-var">totalLikes</span> + <span class="c-var">totalComments</span>) / (<span class="c-var">posts</span>.length * <span class="c-var">followerCount</span>) * <span class="c-num">100</span>).toFixed(<span class="c-num">2</span>);
+
+  <span class="c-keyword">const</span> <span class="c-var">rating</span> = <span class="c-var">engRate</span> > <span class="c-num">6</span> ? <span class="c-string">"🔥 Excellent"</span> : <span class="c-var">engRate</span> > <span class="c-num">3</span> ? <span class="c-string">"✅ Good"</span> : <span class="c-var">engRate</span> > <span class="c-num">1</span> ? <span class="c-string">"⚠ Average"</span> : <span class="c-string">"❌ Low"</span>;
+  console.log(<span class="c-string">`%c
+┌─────────────────────────────────────┐
+│  📊 ENGAGEMENT REPORT: @${<span class="c-var">TARGET_USERNAME</span>}
+├─────────────────────────────────────┤
+│  Followers:      ${<span class="c-var">followerCount</span>.toLocaleString()}
+│  Posts analyzed: ${<span class="c-var">posts</span>.length}
+│  Avg Likes:      ${<span class="c-var">avgLikes</span>.toLocaleString()}
+│  Avg Comments:   ${<span class="c-var">avgComments</span>.toLocaleString()}
+│  Engagement Rate: ${<span class="c-var">engRate</span>}%  ${<span class="c-var">rating</span>}
+└─────────────────────────────────────┘`</span>, <span class="c-string">"color:#00ff88;font-family:monospace"</span>);
+})();</pre>
+      </div>
+    </div>
+
+    <!-- Tool 8: Ghost Follower Finder -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">08</span>
+          <span class="tool-name">GHOST FOLLOWER FINDER</span>
+        </div>
+        <span class="tool-badge badge-analytics">ANALYTICS</span>
+      </div>
+      <div class="tool-desc">
+        Identifies followers who <strong>have never engaged</strong> with any of your last 12 posts. Returns a list sorted by most likely to be ghost/bot accounts — useful for cleaning your audience.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Paste the script while logged in — no setup needed</div>
+        <div class="step"><span class="step-num">02 ›</span> It will cross-reference your follower list against your post likers</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-8"><span class="c-comment">// ── INSTATOOL: Ghost Follower Finder ───────────────────────</span>
+<span class="c-comment">// Checks which followers have NEVER liked any of your last 12 posts</span>
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+  <span class="c-keyword">const</span> <span class="c-var">userId</span> = document.cookie.match(<span class="c-string">/ds_user_id=(\d+)/</span>)?.[<span class="c-num">1</span>];
+  <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
+
+  <span class="c-comment">// Get own username</span>
+  <span class="c-keyword">const</span> <span class="c-var">meRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/${<span class="c-var">userId</span>}/info/`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">myUsername</span> = <span class="c-var">meRes</span>?.user?.username;
+
+  <span class="c-comment">// Get my posts</span>
+  console.log(<span class="c-string">"%c⏳ Fetching your recent posts..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">const</span> <span class="c-var">profileRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">myUsername</span>}`</span>,
+    { headers: { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span> } }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-keyword">const</span> <span class="c-var">posts</span> = <span class="c-var">profileRes</span>?.data?.user?.edge_owner_to_timeline_media?.edges?.slice(<span class="c-num">0</span>, <span class="c-num">12</span>) || [];
+
+  <span class="c-comment">// Collect all engagers (likers) across posts</span>
+  <span class="c-keyword">const</span> <span class="c-var">engagers</span> = <span class="c-keyword">new</span> Set();
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> { node: <span class="c-var">post</span> } <span class="c-keyword">of</span> <span class="c-var">posts</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">likers</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/media/${<span class="c-var">post</span>.id}/likers/`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+    (<span class="c-var">likers</span>.users || []).forEach(<span class="c-var">u</span> => <span class="c-var">engagers</span>.add(<span class="c-var">u</span>.pk));
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">400</span>);
+  }
+  console.log(<span class="c-string">`%c📬 Unique engagers across last ${<span class="c-var">posts</span>.length} posts: ${<span class="c-var">engagers</span>.size}`</span>, <span class="c-string">"color:#00ff88"</span>);
+
+  <span class="c-comment">// Get followers and find ghosts</span>
+  console.log(<span class="c-string">"%c⏳ Loading followers..."</span>, <span class="c-string">"color:#00ff88"</span>);
+  <span class="c-keyword">let</span> <span class="c-var">followers</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
+  <span class="c-keyword">while</span> (<span class="c-var">more</span>) {
+    <span class="c-keyword">const</span> <span class="c-var">r</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/friendships/${<span class="c-var">userId</span>}/followers/?count=200${<span class="c-var">cursor</span> ? "&max_id=" + <span class="c-var">cursor</span> : ""}`</span>).then(<span class="c-var">x</span> => <span class="c-var">x</span>.json());
+    <span class="c-var">followers</span>.push(...(<span class="c-var">r</span>.users || []));
+    <span class="c-var">more</span> = !!<span class="c-var">r</span>.next_max_id; <span class="c-var">cursor</span> = <span class="c-var">r</span>.next_max_id || <span class="c-string">""</span>;
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">500</span>);
+  }
+
+  <span class="c-keyword">const</span> <span class="c-var">ghosts</span> = <span class="c-var">followers</span>.filter(<span class="c-var">u</span> => !<span class="c-var">engagers</span>.has(<span class="c-var">u</span>.pk));
+  console.log(<span class="c-string">`%c\n👻 GHOST FOLLOWERS (${<span class="c-var">ghosts</span>.length} of ${<span class="c-var">followers</span>.length}):\n`</span>, <span class="c-string">"color:#ff88cc;font-weight:bold"</span>);
+  <span class="c-var">ghosts</span>.forEach((<span class="c-var">u</span>, <span class="c-var">i</span>) => console.log(<span class="c-string">`%c${<span class="c-var">i</span>+<span class="c-num">1</span>}. @${<span class="c-var">u</span>.username}`</span>, <span class="c-string">"color:#c8f5d8"</span>));
+  console.log(<span class="c-string">`%c\nGhost rate: ${((ghosts.length / followers.length) * 100).toFixed(1)}%`</span>, <span class="c-string">"color:#ffcc00"</span>);
+})();</pre>
+      </div>
+      <div class="warning-box">This tool defines "ghost" as anyone who didn't like your last 12 posts. Some real followers simply browse without liking — take this as a signal, not a verdict.</div>
+    </div>
+
+    <!-- Tool 9: Banned Hashtag Checker -->
+    <div class="tool-card">
+      <div class="tool-header">
+        <div class="tool-title-group">
+          <span class="tool-num">09</span>
+          <span class="tool-name">BANNED HASHTAG CHECKER</span>
+        </div>
+        <span class="tool-badge badge-analytics">ANALYTICS</span>
+      </div>
+      <div class="tool-desc">
+        Paste a list of hashtags and this script checks each one against Instagram's feed to detect <strong>shadow-banned or blocked tags</strong>. Using banned hashtags kills your post reach silently.
+      </div>
+      <div class="steps">
+        <div class="step"><span class="step-num">01 ›</span> Replace the <strong>HASHTAGS</strong> array with your own list</div>
+        <div class="step"><span class="step-num">02 ›</span> The script will mark each tag as ✅ Safe, ⚠ Restricted, or ❌ Banned</div>
+      </div>
+      <div class="code-block">
+        <div class="code-topbar">
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy Script</button>
+        </div>
+        <pre id="code-9"><span class="c-comment">// ── INSTATOOL: Banned Hashtag Checker ──────────────────────</span>
+<span class="c-keyword">const</span> <span class="c-var">HASHTAGS</span> = [
+  <span class="c-string">"photography"</span>, <span class="c-string">"fitness"</span>, <span class="c-string">"love"</span>, <span class="c-string">"instagood"</span>, <span class="c-string">"tbt"</span>
+  <span class="c-comment">// ← add your hashtags here</span>
+];
+
+(<span class="c-keyword">async</span> () => {
+  <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
+  console.log(<span class="c-string">`%c🔍 Checking ${<span class="c-var">HASHTAGS</span>.length} hashtags...`</span>, <span class="c-string">"color:#00ff88"</span>);
+
+  <span class="c-keyword">const</span> <span class="c-var">results</span> = { safe: [], restricted: [], banned: [] };
+
+  <span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">tag</span> <span class="c-keyword">of</span> <span class="c-var">HASHTAGS</span>) {
+    <span class="c-keyword">try</span> {
+      <span class="c-keyword">const</span> <span class="c-var">res</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/tags/${<span class="c-var">tag</span>}/info/`</span>).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+      <span class="c-keyword">if</span> (!<span class="c-var">res</span>.id) {
+        <span class="c-var">results</span>.banned.push(<span class="c-var">tag</span>);
+        console.log(<span class="c-string">`%c❌ BANNED     #${<span class="c-var">tag</span>}`</span>, <span class="c-string">"color:#ff4466"</span>);
+      } <span class="c-keyword">else</span> <span class="c-keyword">if</span> (<span class="c-var">res</span>.is_restricted_use) {
+        <span class="c-var">results</span>.restricted.push(<span class="c-var">tag</span>);
+        console.log(<span class="c-string">`%c⚠  RESTRICTED #${<span class="c-var">tag</span>}`</span>, <span class="c-string">"color:#ffcc00"</span>);
+      } <span class="c-keyword">else</span> {
+        <span class="c-var">results</span>.safe.push(<span class="c-var">tag</span>);
+        console.log(<span class="c-string">`%c✅ SAFE       #${<span class="c-var">tag</span>}  (${(<span class="c-var">res</span>.media_count || 0).toLocaleString()} posts)`</span>, <span class="c-string">"color:#00ff88"</span>);
+      }
+    } <span class="c-keyword">catch</span> { <span class="c-var">results</span>.banned.push(<span class="c-var">tag</span>); }
+    <span class="c-keyword">await</span> <span class="c-var">sleep</span>(<span class="c-num">800</span>);
+  }
+
+  console.log(<span class="c-string">`%c
+━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Safe:       ${<span class="c-var">results</span>.safe.length}
+⚠  Restricted: ${<span class="c-var">results</span>.restricted.length}
+❌ Banned:     ${<span class="c-var">results</span>.banned.length}
+
+Avoid these: ${[...<span class="c-var">results</span>.banned, ...<span class="c-var">results</span>.restricted].map(<span class="c-var">t</span> => '#' + <span class="c-var">t</span>).join(', ') || 'none'}
+━━━━━━━━━━━━━━━━━━━━━━━━`</span>, <span class="c-string">"color:#ffcc00;font-weight:bold"</span>);
+})();</pre>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════ SAFETY GUIDE ═══════════ -->
+  <section class="tool-section" id="tab-safety">
+
+    <div class="safety-hero">
+      <div class="safety-hero-icon">⚠</div>
+      <div>
+        <div class="safety-hero-title">READ BEFORE YOU RUN ANYTHING</div>
+        <div class="safety-hero-sub">IGNITX operates through your own browser session. Instagram sees every action as coming directly from you. Understanding these limits protects your account.</div>
+      </div>
+    </div>
+
+    <!-- Risk levels -->
+    <div class="safety-grid">
+      <div class="safety-card risk-low">
+        <div class="risk-badge">LOW RISK</div>
+        <div class="risk-title">Read-Only Tools</div>
+        <div class="risk-list">
+          <div class="risk-item">✓ Non-Followers Detector</div>
+          <div class="risk-item">✓ Export to CSV</div>
+          <div class="risk-item">✓ Engagement Rate Calculator</div>
+          <div class="risk-item">✓ Ghost Follower Finder</div>
+          <div class="risk-item">✓ Banned Hashtag Checker</div>
+        </div>
+        <div class="risk-desc">These scripts only <strong>fetch and display data</strong>. No write actions are performed. Safe to run as often as you want.</div>
+      </div>
+
+      <div class="safety-card risk-mid">
+        <div class="risk-badge">MEDIUM RISK</div>
+        <div class="risk-title">Like Tools</div>
+        <div class="risk-list">
+          <div class="risk-item">~ Like Tagged Posts</div>
+          <div class="risk-item">~ Like Posts by Hashtag</div>
+        </div>
+        <div class="risk-desc">Instagram allows roughly <strong>60 likes per hour</strong>. The scripts use 4-second delays to stay safe. Do not run both like tools back-to-back in the same session.</div>
+      </div>
+
+      <div class="safety-card risk-high">
+        <div class="risk-badge">HIGHER RISK</div>
+        <div class="risk-title">Follow / Unfollow Tools</div>
+        <div class="risk-list">
+          <div class="risk-item">! Follow a User's Followings</div>
+          <div class="risk-item">! Mass Unfollow Non-Followers</div>
+        </div>
+        <div class="risk-desc">Follow/unfollow actions are Instagram's most watched behavior. Stick to the limits below or expect a temporary block.</div>
+      </div>
+    </div>
+
+    <!-- Limits table -->
+    <div class="limits-block">
+      <div class="limits-title">// DAILY ACTION LIMITS</div>
+      <div class="limits-table">
+        <div class="limit-row limit-header">
+          <span>ACTION</span><span>PER HOUR</span><span>PER DAY</span><span>CONSEQUENCE</span>
+        </div>
+        <div class="limit-row">
+          <span>❤ Likes</span><span class="safe">60</span><span class="safe">500</span><span>Temp like-block (24h)</span>
+        </div>
+        <div class="limit-row">
+          <span>➕ Follows</span><span class="warn">100</span><span class="warn">200</span><span>Action block → ban</span>
+        </div>
+        <div class="limit-row">
+          <span>➖ Unfollows</span><span class="warn">100</span><span class="warn">200</span><span>Action block → ban</span>
+        </div>
+        <div class="limit-row">
+          <span>🔁 Follow+Unfollow combined</span><span class="danger">100</span><span class="danger">200 total</span><span>These share the same bucket</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div class="rules-block">
+      <div class="limits-title">// RULES TO FOLLOW</div>
+      <div class="rules-grid">
+        <div class="rule-item">
+          <div class="rule-num">01</div>
+          <div class="rule-text"><strong>Never run two action scripts at the same time.</strong> Open one tool, let it finish, then move to the next. Parallel actions multiply your rate and trigger Instagram's bot detection faster.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">02</div>
+          <div class="rule-text"><strong>New accounts are high-risk.</strong> Accounts under 3 months old are flagged far more aggressively. If your account is new, stick to read-only tools only for the first month.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">03</div>
+          <div class="rule-text"><strong>Wait between sessions.</strong> If you run the follow tool once, wait at least 1 hour before running it again — even if you didn't hit the limit. Instagram tracks patterns over time, not just single sessions.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">04</div>
+          <div class="rule-text"><strong>If you get an action block, stop immediately.</strong> A temporary block (24–48h) is a warning. Keep pushing through it and it escalates to a permanent ban. Just wait it out.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">05</div>
+          <div class="rule-text"><strong>Don't use this on your main account carelessly.</strong> These tools are powerful. Test with a secondary account first to understand the behavior before running on your primary.</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">06</div>
+          <div class="rule-text"><strong>You are fully responsible.</strong> IGNITX runs in your own browser using your own session. No data is sent anywhere. But Instagram can still detect patterns — use common sense.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer-box">
+      <div class="disclaimer-title">// LEGAL DISCLAIMER</div>
+      <p>IGNITX is an independent open tool created for educational and personal productivity purposes. It is not affiliated with, endorsed by, or connected to Instagram or Meta in any way. Use of automation tools may violate Instagram's Terms of Service. By using these scripts you accept full responsibility for any consequences to your account. The developer (Keremify) assumes no liability.</p>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span class="footer-logo">IGNITX</span>
+    <span class="footer-sep">—</span>
+    <span>browser console toolkit</span>
+    <span class="footer-sep">—</span>
+    <span>made with ⌨ by <strong class="keremify">KEREMIFY</strong></span>
+    <span class="footer-sep">—</span>
+    <span>use responsibly</span>
+  </div>
+  <div class="footer-note">not affiliated with instagram or meta · v1.0.0</div>
+</footer>
+
+<script>
+  function showTab(name, btn) {
+    document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function copyCode(btn) {
+    const pre = btn.closest('.tool-card').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy Script';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
