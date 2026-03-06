@@ -651,6 +651,7 @@
     <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>,
     <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>,
     <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>,
+    <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>,
   };
 
   <span class="c-keyword">const</span> <span class="c-func">fetchList</span> = <span class="c-keyword">async</span> (<span class="c-var">type</span>) => {
@@ -719,6 +720,7 @@
     <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>,
     <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>,
     <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>,
+    <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>,
   };
 
   <span class="c-comment">// Step 1: Resolve username → user ID</span>
@@ -793,7 +795,7 @@
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
   <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
 
   <span class="c-keyword">const</span> <span class="c-func">getList</span> = <span class="c-keyword">async</span> (<span class="c-var">type</span>) => {
@@ -856,7 +858,7 @@
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
   <span class="c-keyword">let</span> <span class="c-var">list</span> = [], <span class="c-var">cursor</span> = <span class="c-string">""</span>, <span class="c-var">more</span> = <span class="c-keyword">true</span>;
 
   console.log(<span class="c-string">`%c⏳ Fetching ${<span class="c-var">EXPORT_TYPE</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
@@ -922,7 +924,7 @@
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">csrfToken</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
   <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
 
   <span class="c-comment">// Get target user ID</span>
@@ -986,7 +988,7 @@
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">csrfToken</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
   <span class="c-keyword">const</span> <span class="c-var">postH</span> = { ...<span class="c-var">H</span>, <span class="c-string">"content-type"</span>: <span class="c-string">"application/x-www-form-urlencoded"</span> };
 
   console.log(<span class="c-string">`%c⏳ Fetching posts for #${<span class="c-var">HASHTAG</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
@@ -1045,7 +1047,7 @@
 
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
 
   console.log(<span class="c-string">`%c📊 Analyzing @${<span class="c-var">TARGET_USERNAME</span>}...`</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">const</span> <span class="c-var">uRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">TARGET_USERNAME</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
@@ -1107,11 +1109,12 @@
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
   <span class="c-keyword">if</span> (!<span class="c-var">userId</span>) { console.error(<span class="c-string">"❌ Not logged in."</span>); <span class="c-keyword">return</span>; }
 
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
 
-  <span class="c-comment">// Get own username then posts</span>
-  <span class="c-keyword">const</span> <span class="c-var">meRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/${<span class="c-var">userId</span>}/info/`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
+  <span class="c-comment">// Get own username via the current_user endpoint (more reliable)</span>
+  <span class="c-keyword">const</span> <span class="c-var">meRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/accounts/current_user/?edit=true`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
   <span class="c-keyword">const</span> <span class="c-var">myUsername</span> = <span class="c-var">meRes</span>?.user?.username;
+  <span class="c-keyword">if</span> (!<span class="c-var">myUsername</span>) { console.error(<span class="c-string">"❌ Could not get your username. Make sure you're logged in."</span>); <span class="c-keyword">return</span>; }
 
   console.log(<span class="c-string">"%c⏳ Fetching your recent posts..."</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">const</span> <span class="c-var">profileRes</span> = <span class="c-keyword">await</span> fetch(<span class="c-string">`https://www.instagram.com/api/v1/users/web_profile_info/?username=${<span class="c-var">myUsername</span>}`</span>, { headers: <span class="c-var">H</span> }).then(<span class="c-var">r</span> => <span class="c-var">r</span>.json());
@@ -1175,7 +1178,7 @@
 (<span class="c-keyword">async</span> () => {
   <span class="c-keyword">const</span> <span class="c-var">sleep</span> = <span class="c-var">ms</span> => <span class="c-keyword">new</span> Promise(<span class="c-var">r</span> => setTimeout(<span class="c-var">r</span>, <span class="c-var">ms</span>));
   <span class="c-keyword">const</span> <span class="c-var">csrfToken</span> = document.cookie.match(<span class="c-string">/csrftoken=([^;]+)/</span>)?.[<span class="c-num">1</span>];
-  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span> };
+  <span class="c-keyword">const</span> <span class="c-var">H</span> = { <span class="c-string">"x-ig-app-id"</span>: <span class="c-string">"936619743392459"</span>, <span class="c-string">"x-csrftoken"</span>: <span class="c-var">csrfToken</span>, <span class="c-string">"x-requested-with"</span>: <span class="c-string">"XMLHttpRequest"</span>, <span class="c-string">"x-ig-www-claim"</span>: sessionStorage.getItem(<span class="c-string">"www-claim-v2"</span>) || <span class="c-string">"0"</span>, };
 
   console.log(<span class="c-string">`%c🔍 Checking ${<span class="c-var">HASHTAGS</span>.length} hashtags...`</span>, <span class="c-string">"color:#00ff88"</span>);
   <span class="c-keyword">const</span> <span class="c-var">results</span> = { safe: [], restricted: [], banned: [] };
