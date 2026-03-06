@@ -49,6 +49,7 @@ Everything runs locally in your browser. No servers. No tracking. No data collec
 3. Click the **Console** tab
 4. If you see a warning about pasting, type `allow pasting` and press Enter first
 5. Copy any script from the IGNITX website, paste it into the console, and press **Enter**
+6. If an error occurs after waiting for 1 minutes, try to close your AdBlockers.
 
 ---
 
@@ -100,7 +101,7 @@ ignitx/
 
 ## 🌐 Live Site
 
-👉 **[ignitx.vercel.app](https://ignitx.vercel.app)** *(update this link once deployed)*
+👉 **[Soon](https://instagram.com/keremify)**
 
 ---
 
