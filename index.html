@@ -1400,16 +1400,20 @@ const IX = {
   window._ixA.analyze = async () =&gt; {
     const username = (IX.$(&#x27;ix-user&#x27;)?.value||&#x27;&#x27;).trim().replace(&#x27;@&#x27;,&#x27;&#x27;);
     if (!username) { IX.st(&#x27;⚠ Enter a username first&#x27;,&#x27;c-warn&#x27;); return; }
-    IX.st(`⏳ Analyzing @${username}...`); IX.pb(30);
+    IX.st(`⏳ Looking up @${username}...`); IX.pb(20);
     const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=&gt;r.json());
     const user = uRes?.data?.user;
     if (!user) { IX.st(&#x27;❌ User not found or private&#x27;,&#x27;c-err&#x27;); return; }
-    IX.pb(80);
-    const followers = user.edge_followed_by.count;
-    const posts = user.edge_owner_to_timeline_media.edges.slice(0,12).map(e=&gt;e.node);
-    if (!posts.length) { IX.st(&#x27;⚠ No posts found&#x27;,&#x27;c-warn&#x27;); return; }
-    const totalLikes    = posts.reduce((s,p)=&gt;s+(p.edge_media_preview_like?.count||0),0);
-    const totalComments = posts.reduce((s,p)=&gt;s+(p.edge_media_to_comment?.count||0),0);
+    const followers = user.edge_followed_by?.count || user.follower_count || 0;
+    const userId = user.id;
+    IX.st(`⏳ Fetching posts for @${username}...`); IX.pb(50);
+    // web_profile_info no longer returns posts — use feed endpoint directly
+    const feedRes = await fetch(`https://www.instagram.com/api/v1/feed/user/${userId}/?count=12`,{headers:H}).then(r=&gt;r.json());
+    const posts = feedRes.items || [];
+    if (!posts.length) { IX.st(&#x27;⚠ No posts found — account may be private&#x27;,&#x27;c-warn&#x27;); return; }
+    IX.pb(90);
+    const totalLikes    = posts.reduce((s,p)=&gt;s+(p.like_count||0),0);
+    const totalComments = posts.reduce((s,p)=&gt;s+(p.comment_count||0),0);
     const avgLikes    = Math.round(totalLikes/posts.length);
     const avgComments = Math.round(totalComments/posts.length);
     const er = ((totalLikes+totalComments)/(posts.length*followers)*100).toFixed(2);
