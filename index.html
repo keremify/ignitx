@@ -1,187 +1,376 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IGNITX — Instagram Console Toolkit</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-<style>
-  :root {
-    --green: #00ff88; --green-dim: #00cc66;
-    --green-glow: rgba(0,255,136,0.15); --green-faint: rgba(0,255,136,0.05);
-    --bg: #050a06; --bg2: #080f09; --bg3: #0d1a0e;
-    --red: #ff4466; --yellow: #ffcc00; --blue: #00aaff;
-    --text: #c8f5d8; --text-dim: #5a8a68; --border: rgba(0,255,136,0.2);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Share Tech Mono',monospace; min-height:100vh; overflow-x:hidden; cursor:crosshair; }
-  body::before { content:''; position:fixed; top:0; left:0; width:100%; height:100%; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px); pointer-events:none; z-index:9999; }
-  body::after { content:''; position:fixed; top:0; left:0; width:100%; height:100%; background-image:linear-gradient(var(--green-faint) 1px,transparent 1px),linear-gradient(90deg,var(--green-faint) 1px,transparent 1px); background-size:40px 40px; pointer-events:none; z-index:0; }
-
-  header { position:relative; z-index:10; text-align:center; padding:60px 20px 40px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,rgba(0,255,136,.05) 0%,transparent 100%); }
-  .logo-line { font-size:11px; letter-spacing:6px; color:var(--text-dim); margin-bottom:16px; animation:fadeIn 1s ease forwards; }
-  .logo { font-family:'Orbitron',monospace; font-size:clamp(36px,8vw,80px); font-weight:900; color:var(--green); text-shadow:0 0 20px rgba(0,255,136,.8),0 0 60px rgba(0,255,136,.4); letter-spacing:8px; animation:glitch 6s infinite; }
-  @keyframes glitch { 0%,92%,100% { text-shadow:0 0 20px rgba(0,255,136,.8),0 0 60px rgba(0,255,136,.4); transform:none; } 93% { transform:translateX(-3px); text-shadow:-3px 0 var(--red),3px 0 var(--blue); } 94% { transform:translateX(3px); text-shadow:3px 0 var(--red),-3px 0 var(--blue); } 95% { transform:none; text-shadow:0 0 20px rgba(0,255,136,.8),0 0 60px rgba(0,255,136,.4); } }
-  .tagline { margin-top:16px; font-size:13px; color:var(--text-dim); letter-spacing:3px; }
-  .tagline span { color:var(--green); }
-  .made-by { margin-top:12px; font-size:11px; letter-spacing:3px; color:var(--text-dim); }
-  .keremify { color:var(--green); font-family:'Orbitron',monospace; font-size:10px; letter-spacing:4px; text-shadow:0 0 8px rgba(0,255,136,.5); }
-  .blink { animation:blink 1s step-end infinite; color:var(--green); }
-  @keyframes blink { 50% { opacity:0; } }
-
-  .how-to { position:relative; z-index:10; margin:32px auto; max-width:900px; padding:0 20px; }
-  .how-to-box { border:1px solid var(--border); background:var(--bg3); padding:20px 28px; display:flex; align-items:flex-start; gap:20px; }
-  .how-to-box::before { content:'//'; color:var(--green); font-size:24px; flex-shrink:0; margin-top:2px; }
-  .how-to-box p { font-size:13px; line-height:1.8; color:var(--text-dim); }
-  .how-to-box p strong { color:var(--green); }
-  kbd { background:rgba(0,255,136,.1); border:1px solid var(--border); padding:2px 8px; font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--green); }
-
-  nav { position:sticky; top:0; z-index:100; background:rgba(5,10,6,.95); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); display:flex; gap:0; overflow-x:auto; scrollbar-width:none; padding:0 20px; }
-  nav::-webkit-scrollbar { display:none; }
-  .nav-tab { padding:14px 24px; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--text-dim); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; white-space:nowrap; transition:all .2s; text-transform:uppercase; }
-  .nav-tab:hover { color:var(--green); }
-  .nav-tab.active { color:var(--green); border-bottom-color:var(--green); text-shadow:0 0 10px rgba(0,255,136,.5); }
-
-  main { position:relative; z-index:10; max-width:900px; margin:0 auto; padding:40px 20px 80px; }
-  .tool-section { display:none; }
-  .tool-section.active { display:block; }
-
-  .tool-card { border:1px solid var(--border); background:var(--bg2); margin-bottom:32px; animation:slideUp .4s ease forwards; opacity:0; transform:translateY(20px); }
-  @keyframes slideUp { to { opacity:1; transform:translateY(0); } }
-  .tool-card:nth-child(1) { animation-delay:.05s; }
-  .tool-card:nth-child(2) { animation-delay:.1s; }
-  .tool-card:nth-child(3) { animation-delay:.15s; }
-  .tool-card:nth-child(4) { animation-delay:.2s; }
-
-  .tool-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-  .tool-title-group { display:flex; align-items:center; gap:12px; }
-  .tool-num { font-family:'Orbitron',monospace; font-size:11px; color:var(--green); background:var(--green-glow); border:1px solid var(--border); padding:4px 10px; flex-shrink:0; }
-  .tool-name { font-family:'Orbitron',monospace; font-size:15px; font-weight:700; color:var(--text); letter-spacing:1px; }
-  .tool-badge { font-size:10px; padding:3px 10px; letter-spacing:2px; border:1px solid; flex-shrink:0; }
-  .badge-follow { color:var(--blue); border-color:rgba(0,170,255,.4); background:rgba(0,170,255,.07); }
-  .badge-engage { color:var(--yellow); border-color:rgba(255,204,0,.4); background:rgba(255,204,0,.07); }
-  .badge-analytics { color:#ff88cc; border-color:rgba(255,136,204,.4); background:rgba(255,136,204,.07); }
-
-  .tool-desc { padding:16px 24px; font-size:13px; color:var(--text-dim); line-height:1.7; border-bottom:1px solid var(--border); }
-  .tool-desc strong { color:var(--green-dim); }
-
-  .steps { padding:16px 24px; display:flex; flex-direction:column; gap:8px; border-bottom:1px solid var(--border); }
-  .step { display:flex; gap:12px; align-items:flex-start; font-size:12px; color:var(--text-dim); }
-  .step-num { color:var(--green); flex-shrink:0; font-size:11px; }
-
-  /* UI Preview Badge */
-  .ui-badge { display:inline-flex; align-items:center; gap:6px; font-size:10px; padding:3px 10px; letter-spacing:2px; border:1px solid rgba(0,255,136,.3); background:rgba(0,255,136,.06); color:var(--green); flex-shrink:0; }
-
-  /* Prism overrides */
-  .code-block { position:relative; background:#020704; }
-  .code-topbar { display:flex; align-items:center; justify-content:space-between; padding:8px 16px; border-bottom:1px solid var(--border); background:var(--bg3); }
-  .code-lang { font-size:10px; letter-spacing:3px; color:var(--text-dim); text-transform:uppercase; }
-  .copy-btn { font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:2px; background:transparent; color:var(--green); border:1px solid var(--border); padding:5px 16px; cursor:pointer; transition:all .2s; text-transform:uppercase; }
-  .copy-btn:hover { background:var(--green-glow); box-shadow:0 0 12px rgba(0,255,136,.2); }
-  .copy-btn.copied { color:var(--yellow); border-color:rgba(255,204,0,.4); }
-  pre[class*="language-"] { margin:0 !important; border-radius:0 !important; max-height:340px; background:#020704 !important; font-size:11.5px !important; }
-  code[class*="language-"] { font-size:11.5px !important; }
-  :not(pre) > code[class*="language-"], pre[class*="language-"] { background:#020704 !important; }
-
-  .warning-box { margin:0; border-top:1px solid rgba(255,204,0,.2); background:rgba(255,204,0,.03); padding:12px 20px; display:flex; gap:10px; align-items:flex-start; font-size:11px; color:rgba(255,204,0,.8); line-height:1.6; }
-  .warning-box::before { content:'⚠'; flex-shrink:0; }
-
-  /* Safety Section */
-  .safety-hero { display:flex; gap:20px; align-items:flex-start; padding:28px; border:1px solid rgba(255,204,0,.3); background:rgba(255,204,0,.04); margin-bottom:28px; animation:slideUp .3s ease forwards; }
-  .safety-hero-icon { font-size:36px; flex-shrink:0; line-height:1; }
-  .safety-hero-title { font-family:'Orbitron',monospace; font-size:14px; color:var(--yellow); letter-spacing:2px; margin-bottom:10px; }
-  .safety-hero-sub { font-size:13px; color:var(--text-dim); line-height:1.8; }
-  .safety-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-bottom:28px; }
-  .safety-card { border:1px solid; padding:20px; animation:slideUp .4s ease forwards; opacity:0; }
-  .safety-card:nth-child(1) { animation-delay:.05s; } .safety-card:nth-child(2) { animation-delay:.1s; } .safety-card:nth-child(3) { animation-delay:.15s; }
-  .risk-low { border-color:rgba(0,255,136,.3); background:rgba(0,255,136,.03); } .risk-mid { border-color:rgba(255,204,0,.3); background:rgba(255,204,0,.03); } .risk-high { border-color:rgba(255,68,102,.3); background:rgba(255,68,102,.03); }
-  .risk-badge { font-size:9px; letter-spacing:3px; margin-bottom:10px; } .risk-low .risk-badge { color:var(--green); } .risk-mid .risk-badge { color:var(--yellow); } .risk-high .risk-badge { color:var(--red); }
-  .risk-title { font-family:'Orbitron',monospace; font-size:12px; color:var(--text); margin-bottom:12px; letter-spacing:1px; }
-  .risk-item { font-size:12px; color:var(--text-dim); padding:3px 0; }
-  .risk-desc { font-size:11px; color:var(--text-dim); margin-top:12px; line-height:1.7; border-top:1px solid var(--border); padding-top:12px; }
-  .risk-desc strong { color:var(--text); }
-  .limits-block { margin-bottom:28px; } .limits-title { font-size:11px; letter-spacing:3px; color:var(--green); margin-bottom:12px; }
-  .limits-table { border:1px solid var(--border); }
-  .limit-row { display:grid; grid-template-columns:2fr 1fr 1fr 2fr; border-bottom:1px solid var(--border); font-size:12px; }
-  .limit-row:last-child { border-bottom:none; }
-  .limit-row span { padding:12px 16px; border-right:1px solid var(--border); }
-  .limit-row span:last-child { border-right:none; color:var(--text-dim); }
-  .limit-header { background:var(--bg3); font-size:10px; letter-spacing:2px; color:var(--text-dim); }
-  .safe { color:var(--green) !important; } .warn { color:var(--yellow) !important; } .danger { color:var(--red) !important; }
-  .rules-block { margin-bottom:28px; }
-  .rules-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
-  .rule-item { display:flex; gap:16px; padding:18px; border:1px solid var(--border); background:var(--bg2); font-size:12px; line-height:1.7; color:var(--text-dim); }
-  .rule-item strong { color:var(--text); }
-  .rule-num { font-family:'Orbitron',monospace; font-size:18px; color:var(--border); flex-shrink:0; line-height:1.2; }
-  .disclaimer-box { border:1px solid var(--border); background:var(--bg3); padding:20px 24px; }
-  .disclaimer-title { font-size:10px; letter-spacing:3px; color:var(--text-dim); margin-bottom:10px; }
-  .disclaimer-box p { font-size:11px; color:var(--text-dim); line-height:1.8; }
-  .footer-inner { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:10px; margin-bottom:10px; font-size:11px; color:var(--text-dim); letter-spacing:1px; }
-  .footer-logo { font-family:'Orbitron',monospace; font-size:13px; color:var(--green); letter-spacing:4px; text-shadow:0 0 8px rgba(0,255,136,.4); }
-  .footer-sep { color:var(--border); } .footer-note { font-size:10px; color:var(--text-dim); opacity:.5; letter-spacing:2px; margin-top:4px; }
-  footer { position:relative; z-index:10; text-align:center; padding:32px 20px; border-top:1px solid var(--border); }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg); } ::-webkit-scrollbar-thumb { background:var(--border); }
-  @media (max-width:600px) { .tool-name { font-size:13px; } .logo { letter-spacing:4px; } pre { font-size:10px; } .limit-row { grid-template-columns:1fr 1fr; } .limit-row span:nth-child(3),.limit-row span:nth-child(4) { display:none; } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IGNITX — Instagram Console Toolkit</title>
+  <meta name="description" content="Free browser console toolkit for Instagram — unfollow trackers, bulk follow, engagement analytics and more.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 </head>
 <body>
 
-<header>
-  <div class="logo-line">▸ INSTAGRAM CONSOLE TOOLKIT v1.0.0</div>
-  <div class="logo">IGNITX</div>
-  <div class="tagline">run powerful scripts directly in your browser <span>console</span> <span class="blink">_</span></div>
-  <div class="made-by">crafted by <span class="keremify">Keremify</span></div>
-</header>
-
-<div class="how-to">
-  <div class="how-to-box">
-    <p>
-      <strong>HOW TO USE:</strong> Open Instagram in your browser → Press <kbd>F12</kbd> or <kbd>Ctrl+Shift+J</kbd> (Windows) / <kbd>⌘+⌥+I</kbd> (Mac) to open DevTools → Click the <strong>Console</strong> tab → Copy any script below and paste it → Hit <kbd>Enter</kbd>.<br>
-      If you see a warning about pasting, type <strong>allow pasting</strong> first, then paste the script.<br>
-      <span style="color:var(--yellow)">⚠ <strong>Disable your ad blocker on instagram.com</strong> before running scripts — it interferes with Instagram's session and causes request errors.</span>
-    </p>
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-logo">IGNITX</div>
+  <div class="nav-links">
+    <button class="nav-link" data-section="how" data-scroll="how">How it works</button>
+    <button class="nav-link" data-section="tools" data-scroll="tools">Tools</button>
+    <button class="nav-link" data-section="safety" data-scroll="safety">Safety</button>
+    <a href="https://github.com/keremify" target="_blank" class="nav-badge">GitHub ↗</a>
   </div>
-</div>
-
-<nav>
-  <button class="nav-tab active" onclick="showTab('follow',this)">Follow Tools</button>
-  <button class="nav-tab" onclick="showTab('engage',this)">Engagement</button>
-  <button class="nav-tab" onclick="showTab('analytics',this)">Analytics</button>
-  <button class="nav-tab" onclick="showTab('safety',this)">⚠ Safety Guide</button>
 </nav>
 
-<main>
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-eyebrow"><div class="hero-dot"></div>Open Source · No Login · No Extension</div>
+  <h1 class="hero-title">IGNITX</h1>
+  <p class="hero-sub">
+    A <strong>free browser console toolkit</strong> for Instagram power users.
+    Copy, paste, run — no extensions, no sign-ups, no servers.
+  </p>
+  <div class="hero-cta">
+    <button class="btn-primary" data-scroll="tools">Browse Tools</button>
+    <button class="btn-secondary" data-scroll="how">How it works</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-num">9</div><div class="stat-label">Tools</div></div>
+    <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Servers</div></div>
+    <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Sign-ups</div></div>
+    <div class="stat-item"><div class="stat-num">Free</div><div class="stat-label">Forever</div></div>
+  </div>
+  <div class="scroll-hint">Scroll<div class="scroll-arrow"></div></div>
+</section>
 
-<!-- ══════════════ FOLLOW TOOLS ══════════════ -->
-<section class="tool-section active" id="tab-follow">
+<!-- ── HOW TO USE ── -->
+<section class="how-section" id="how">
+  <div class="section-label">Getting started</div>
+  <h2 class="section-title" data-reveal>Three steps, zero installs.</h2>
+  <div class="steps-grid">
+    <div class="step-card" data-reveal data-delay="1">
+      <div class="step-num">01</div>
+      <div class="step-icon">🌐</div>
+      <div class="step-title">Open Instagram</div>
+      <div class="step-desc">Go to instagram.com and make sure you're logged in. Disable your ad blocker on this domain.</div>
+    </div>
+    <div class="step-card" data-reveal data-delay="2">
+      <div class="step-num">02</div>
+      <div class="step-icon">🛠</div>
+      <div class="step-title">Open DevTools</div>
+      <div class="step-desc">Press <span class="step-code">F12</span> or <span class="step-code">Ctrl+Shift+J</span> (Win) / <span class="step-code">⌘+⌥+I</span> (Mac) and click the Console tab.</div>
+    </div>
+    <div class="step-card" data-reveal data-delay="3">
+      <div class="step-num">03</div>
+      <div class="step-icon">⚡</div>
+      <div class="step-title">Paste &amp; Run</div>
+      <div class="step-desc">Copy any script below, paste it into the console and press Enter. A UI panel slides in on the right.</div>
+    </div>
+  </div>
+  <div class="warn-strip" data-reveal>
+    ⚠ If pasting is blocked, type <span class="step-code">allow pasting</span> and press Enter first, then paste your script.
+    <br><strong>Always disable your ad blocker on instagram.com</strong> — it breaks session tokens.
+  </div>
+</section>
 
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">01</span>
-        <span class="tool-name">NON-FOLLOWERS DETECTOR</span>
+<!-- ── TOOLS ── -->
+<section class="tools-section" id="tools">
+  <div class="section-label">The toolkit</div>
+  <h2 class="section-title" data-reveal>Every script injects a live panel<br>directly into Instagram.</h2>
+
+  <div class="tab-nav" data-reveal>
+    <button class="tab-btn" onclick="showTab('follow', this)">Follow Tools</button>
+    <button class="tab-btn" onclick="showTab('engage', this)">Engagement</button>
+    <button class="tab-btn" onclick="showTab('analytics', this)">Analytics</button>
+    <button class="tab-btn" onclick="showTab('safety', this)">⚠ Safety</button>
+  </div>
+
+  <!-- Follow tab -->
+  <div class="tab-panel" id="tab-follow">
+    <div class="tool-card" data-reveal data-delay="1">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">👥</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#01</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-follow">Follow</span>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-follow">FOLLOW</span>
+      <div class="tool-name">Non-Followers Detector</div>
+      <div class="tool-desc">Scans your full following list vs followers. Every non-follower appears in a scrollable panel with individual unfollow buttons, checkboxes for bulk selection, and a CSV export.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Go to instagram.com while logged in</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Paste the script into the console</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Browse the list and unfollow or export</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s1"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+    <div class="tool-card" data-reveal data-delay="2">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">➕</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#02</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-follow">Follow</span>
       </div>
+      <div class="tool-name">Follow a User's Followings</div>
+      <div class="tool-desc">Enter a target username in the panel, set a delay, and the script bulk-follows their entire following list. A live counter and scrolling log show every action. Stop anytime.</div>
     </div>
-    <div class="tool-desc">Scans your <strong>entire following list</strong>, compares it to your followers, and opens an interactive panel showing every account that doesn't follow back. <strong>Unfollow individually or bulk-unfollow selected</strong>, and export the list as CSV.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Go to instagram.com and make sure you're logged in</div>
-      <div class="step"><span class="step-num">02 ›</span> Paste the script into the console and press Enter</div>
-      <div class="step"><span class="step-num">03 ›</span> A panel opens on the right — browse results and click Unfollow on any account</div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — a panel with inputs appears</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Type the target username and click Start</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Watch the live counter — hit Stop anytime</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s2"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+    <div class="tool-card" data-reveal data-delay="3">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">➖</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#03</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-follow">Follow</span>
+      </div>
+      <div class="tool-name">Mass Unfollow Non-Followers</div>
+      <div class="tool-desc">Set a session limit and a whitelist of accounts to protect, then let the panel auto-unfollow all your non-followers with a live log and a Stop button.</div>
     </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — set your max and whitelist</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Click Start Unfollow</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Hit Stop anytime to pause the session</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s3"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+    <div class="tool-card" data-reveal data-delay="0">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">📥</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#04</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-follow">Follow</span>
+      </div>
+      <div class="tool-name">Export Followers / Following to CSV</div>
+      <div class="tool-desc">Choose followers or following from a dropdown, then downloads a complete CSV with username, full name, profile URL and private status.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Choose followers or following in the dropdown</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Click Export — file downloads automatically</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s4"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+  </div>
+
+  <!-- Engage tab -->
+  <div class="tab-panel" id="tab-engage">
+    <div class="tool-card" data-reveal data-delay="1">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">❤️</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#05</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-engage">Engage</span>
+      </div>
+      <div class="tool-name">Like Tagged Posts of a User</div>
+      <div class="tool-desc">Enter a username in the panel and a post limit. The script likes posts that account is tagged in, with a live counter and per-post log. Includes challenge detection to protect your session.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — enter target username</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Set max likes, click Start Liking</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Watch the counter — hit Stop anytime</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s5"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+    <div class="tool-card" data-reveal data-delay="2">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">#</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#06</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-engage">Engage</span>
+      </div>
+      <div class="tool-name">Like Posts by Hashtag</div>
+      <div class="tool-desc">Enter a hashtag and a limit. Likes recent posts under that tag with a live log showing each liked account. Auto-stops on rate limit or Instagram challenge.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — type your hashtag (no # needed)</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Set max likes, click Start</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">See each liked post appear in the live log</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s6"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+  </div>
+
+  <!-- Analytics tab -->
+  <div class="tab-panel" id="tab-analytics">
+    <div class="tool-card" data-reveal data-delay="3">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">📊</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#07</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-analytics">Analytics</span>
+      </div>
+      <div class="tool-name">Engagement Rate Calculator</div>
+      <div class="tool-desc">Enter any public username. The panel fetches the last 12 posts and displays a clean stats card: followers, avg likes, avg comments, and a color-coded engagement rate with verdict.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — type any public username</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Click Analyze</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Read the stats card — Analyze Another resets the panel</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s7"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+    <div class="tool-card" data-reveal data-delay="0">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">👻</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#08</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-analytics">Analytics</span>
+      </div>
+      <div class="tool-name">Ghost Follower Finder</div>
+      <div class="tool-desc">Auto-runs on your account — no input needed. Cross-references your followers against likers on your last 12 posts. Shows a scrollable ghost list with a ghost rate % and CSV export.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — scanning starts automatically</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Wait for the panel to finish</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Export ghost list to CSV if needed</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s8"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+    <div class="tool-card" data-reveal data-delay="1">
+  <div class="tool-top">
+    <div class="tool-icon-wrap">🏷️</div>
+    <div class="tool-main">
+      <div class="tool-badges">
+        <span class="badge badge-num">#09</span>
+        <span class="badge badge-ui">✦ UI Panel</span>
+        <span class="badge badge-analytics">Analytics</span>
+      </div>
+      <div class="tool-name">Banned Hashtag Checker</div>
+      <div class="tool-desc">Paste your hashtag list into the panel text area (one per line). Results appear row by row, color-coded: ✅ Safe, ⚠ Restricted, ❌ Banned, with post counts for safe tags.</div>
+    </div>
+  </div>
+  <div class="tool-steps"><div class="t-step"><div class="t-step-n">01</div><div class="t-step-t">Paste into console — a text area appears</div></div><div class="t-step"><div class="t-step-n">02</div><div class="t-step-t">Type or paste your hashtags, one per line</div></div><div class="t-step"><div class="t-step-n">03</div><div class="t-step-t">Click Check — results appear as they scan</div></div></div>
+  <div class="code-wrap">
+  <div class="code-topbar">
+    <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+    <span class="code-filename">ignitx-script.js</span>
+    <button class="copy-btn" onclick="copyCode(this)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="10" height="10" rx="2"/><path d="M2 12V2h10"/></svg>
+      Copy Script
+    </button>
+  </div>
+  <pre class="code-pre" data-src="s9"><code class="code-el language-javascript"></code></pre>
+</div>
+</div>
+  </div>
+
+  <!-- Safety tab (mirrors the Safety section below) -->
+  <div class="tab-panel" id="tab-safety">
+    <div style="padding:8px 0">
+      <div class="safety-alert" data-reveal>
+        <div class="safety-alert-icon">⚠️</div>
+        <div>
+          <div class="safety-alert-title">Read before you run anything</div>
+          <div class="safety-alert-body">IGNITX runs in your own browser session. Instagram sees every action as coming directly from you. The limits below exist to keep your account safe.</div>
+        </div>
+      </div>
+      <div class="risk-grid">
+        <div class="risk-card risk-low" data-reveal><div class="risk-label">Low Risk</div><div class="risk-title">Read-Only Tools</div><div class="risk-item">✓ Non-Followers Detector</div><div class="risk-item">✓ Export CSV</div><div class="risk-item">✓ Engagement Rate Calculator</div><div class="risk-item">✓ Ghost Follower Finder</div><div class="risk-item">✓ Banned Hashtag Checker</div></div>
+        <div class="risk-card risk-mid" data-reveal data-delay="1"><div class="risk-label">Medium Risk</div><div class="risk-title">Like Tools</div><div class="risk-item">~ Like Tagged Posts</div><div class="risk-item">~ Like Posts by Hashtag</div><div class="risk-item" style="font-size:11px;margin-top:8px;opacity:0.7">~60 likes/hour. Scripts use 5s delays. Don't stack sessions.</div></div>
+        <div class="risk-card risk-high" data-reveal data-delay="2"><div class="risk-label">Higher Risk</div><div class="risk-title">Follow / Unfollow</div><div class="risk-item">! Follow a User's Followings</div><div class="risk-item">! Mass Unfollow Non-Followers</div><div class="risk-item" style="font-size:11px;margin-top:8px;opacity:0.7">Instagram's most scrutinized action. Stick to the limits.</div></div>
+      </div>
+      <table class="limits-table" data-reveal>
+        <thead><tr><th>Action</th><th>Per Hour</th><th>Per Day</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td>❤ Likes</td><td class="safe">60</td><td class="safe">500</td><td style="color:var(--text2)">Temp like-block (24h)</td></tr>
+          <tr><td>➕ Follows</td><td class="warn">100</td><td class="warn">200</td><td style="color:var(--text2)">Action block → ban risk</td></tr>
+          <tr><td>➖ Unfollows</td><td class="warn">100</td><td class="warn">200</td><td style="color:var(--text2)">Action block → ban risk</td></tr>
+          <tr><td>🔁 Follow + Unfollow combined</td><td class="dang">100</td><td class="dang">200 total</td><td style="color:var(--text2)">They share the same quota</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer id="safety">
+  <div class="footer-logo">IGNITX</div>
+  <div class="footer-by">Built by <span class="footer-keremify">Keremify</span> · Open source · Use responsibly</div>
+  <div class="footer-note">Not affiliated with Instagram or Meta · v2.0.0</div>
+</footer>
+
+<!-- ── HIDDEN SCRIPT SOURCES ── -->
+<script type="text/plain" id="s1">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -196,7 +385,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -206,7 +395,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -226,7 +415,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -241,148 +430,125 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;NON-FOLLOWERS DETECTOR&#x27;);
+(async () => {
+  IX.title('NON-FOLLOWERS DETECTOR');
   const userId = document.cookie.match(/ds_user_id=(\d+)/)?.[1];
   const csrf   = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!userId) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H  = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const PH = {...H,&quot;content-type&quot;:&quot;application/x-www-form-urlencoded&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!userId) { IX.st('❌ Not logged in','c-err'); return; }
+  const H  = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const PH = {...H,"content-type":"application/x-www-form-urlencoded"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  const getList = async type =&gt; {
-    let list=[], after=&quot;&quot;, more=true;
+  const getList = async type => {
+    let list=[], after="", more=true;
     while (more) {
       IX.st(`⏳ Loading ${type}... (${list.length} so far)`);
-      const res = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200${after?&quot;&amp;max_id=&quot;+after:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-      if (res.status===&#x27;login_required&#x27;){IX.st(&#x27;❌ Session expired&#x27;,&#x27;c-err&#x27;);return[];}
-      list.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||&quot;&quot;;
+      const res = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200${after?"&max_id="+after:""}`,{headers:H}).then(r=>r.json());
+      if (res.status==='login_required'){IX.st('❌ Session expired','c-err');return[];}
+      list.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||"";
       await sleep(600);
     }
     return list;
   };
 
-  IX.pb(20); const following = await getList(&#x27;following&#x27;);
-  IX.pb(60); const followers = await getList(&#x27;followers&#x27;);
+  IX.pb(20); const following = await getList('following');
+  IX.pb(60); const followers = await getList('followers');
   IX.pb(100);
 
-  const fSet = new Set(followers.map(u=&gt;u.pk));
-  const nfb  = following.filter(u=&gt;!fSet.has(u.pk));
+  const fSet = new Set(followers.map(u=>u.pk));
+  const nfb  = following.filter(u=>!fSet.has(u.pk));
 
   if (!nfb.length) {
-    IX.st(&#x27;✅ Everyone follows you back!&#x27;);
-    IX.body(&#x27;&lt;div class=&quot;ix-empty&quot;&gt;&lt;div style=&quot;font-size:28px&quot;&gt;🎉&lt;/div&gt;&lt;div&gt;ALL CLEAR&lt;/div&gt;&lt;/div&gt;&#x27;);
+    IX.st('✅ Everyone follows you back!');
+    IX.body('<div class="ix-empty"><div style="font-size:28px">🎉</div><div>ALL CLEAR</div></div>');
     return;
   }
 
-  IX.st(`Found &lt;b&gt;${nfb.length}&lt;/b&gt; non-followers`);
-  IX.body(`&lt;div class=&quot;ix-sec&quot;&gt;${nfb.length} ACCOUNTS NOT FOLLOWING YOU BACK&lt;/div&gt;`);
+  IX.st(`Found <b>${nfb.length}</b> non-followers`);
+  IX.body(`<div class="ix-sec">${nfb.length} ACCOUNTS NOT FOLLOWING YOU BACK</div>`);
 
-  nfb.forEach(u =&gt; IX.add(`
-    &lt;div class=&quot;ix-urow&quot; id=&quot;row${u.pk}&quot;&gt;
-      &lt;input type=&quot;checkbox&quot; class=&quot;ix-check ix-cb&quot; data-pk=&quot;${u.pk}&quot; checked&gt;
-      &lt;div class=&quot;ix-av&quot;&gt;${u.username[0]}&lt;/div&gt;
-      &lt;div class=&quot;ix-uinfo&quot;&gt;
-        &lt;div class=&quot;ix-uname&quot;&gt;@${u.username}&lt;/div&gt;
-        &lt;a class=&quot;ix-ulink&quot; href=&quot;https://instagram.com/${u.username}&quot; target=&quot;_blank&quot;&gt;VISIT ↗&lt;/a&gt;
-      &lt;/div&gt;
-      &lt;button class=&quot;ix-abtn&quot; data-action=&quot;unfone&quot; data-pk=&quot;${u.pk}&quot; data-user=&quot;${u.username}&quot; id=&quot;ab${u.pk}&quot;&gt;UNFOLLOW&lt;/button&gt;
-    &lt;/div&gt;`));
+  nfb.forEach(u => IX.add(`
+    <div class="ix-urow" id="row${u.pk}">
+      <input type="checkbox" class="ix-check ix-cb" data-pk="${u.pk}" checked>
+      <div class="ix-av">${u.username[0]}</div>
+      <div class="ix-uinfo">
+        <div class="ix-uname">@${u.username}</div>
+        <a class="ix-ulink" href="https://instagram.com/${u.username}" target="_blank">VISIT ↗</a>
+      </div>
+      <button class="ix-abtn" data-action="unfone" data-pk="${u.pk}" data-user="${u.username}" id="ab${u.pk}">UNFOLLOW</button>
+    </div>`));
 
-  const unfOne = async (pk, btn) =&gt; {
-    if (!btn || btn.classList.contains(&#x27;done&#x27;)) return;
-    btn.textContent = &#x27;...&#x27;; btn.classList.add(&#x27;done&#x27;);
-    await fetch(`https://www.instagram.com/api/v1/friendships/destroy/${pk}/`,{method:&quot;POST&quot;,headers:PH});
-    btn.textContent = &#x27;✓ DONE&#x27;;
-    const row = document.getElementById(&#x27;row&#x27;+pk);
-    if (row) { row.style.opacity=&#x27;0.35&#x27;; }
+  const unfOne = async (pk, btn) => {
+    if (!btn || btn.classList.contains('done')) return;
+    btn.textContent = '...'; btn.classList.add('done');
+    await fetch(`https://www.instagram.com/api/v1/friendships/destroy/${pk}/`,{method:"POST",headers:PH});
+    btn.textContent = '✓ DONE';
+    const row = document.getElementById('row'+pk);
+    if (row) { row.style.opacity='0.35'; }
   };
 
-  window._ixA.unfone = t =&gt; unfOne(t.dataset.pk, t);
+  window._ixA.unfone = t => unfOne(t.dataset.pk, t);
 
-  window._ixA.unfselected = async () =&gt; {
-    const cbs = [...document.querySelectorAll(&#x27;.ix-cb:checked&#x27;)];
-    if (!cbs.length) { IX.st(&#x27;⚠ Nothing selected&#x27;,&#x27;c-warn&#x27;); return; }
-    IX.st(`Unfollowing ${cbs.length} accounts...`,&#x27;c-warn&#x27;);
+  window._ixA.unfselected = async () => {
+    const cbs = [...document.querySelectorAll('.ix-cb:checked')];
+    if (!cbs.length) { IX.st('⚠ Nothing selected','c-warn'); return; }
+    IX.st(`Unfollowing ${cbs.length} accounts...`,'c-warn');
     for (const cb of cbs) {
-      await unfOne(cb.dataset.pk, document.getElementById(&#x27;ab&#x27;+cb.dataset.pk));
+      await unfOne(cb.dataset.pk, document.getElementById('ab'+cb.dataset.pk));
       await sleep(3600);
     }
-    IX.st(&#x27;✅ Done!&#x27;);
+    IX.st('✅ Done!');
   };
 
-  window._ixA.export = () =&gt; {
-    const csv = &#x27;username,profile_url\n&#x27; + nfb.map(u=&gt;`@${u.username},https://instagram.com/${u.username}`).join(&#x27;\n&#x27;);
-    const a = Object.assign(document.createElement(&#x27;a&#x27;),{href:URL.createObjectURL(new Blob([csv],{type:&#x27;text/csv&#x27;})),download:&#x27;non_followers.csv&#x27;});
+  window._ixA.export = () => {
+    const csv = 'username,profile_url\n' + nfb.map(u=>`@${u.username},https://instagram.com/${u.username}`).join('\n');
+    const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'non_followers.csv'});
     document.body.appendChild(a); a.click(); a.remove();
-    IX.st(&#x27;✅ CSV downloaded!&#x27;);
+    IX.st('✅ CSV downloaded!');
   };
 
-  IX.foot(`&lt;button class=&quot;ix-btn ix-br&quot; data-action=&quot;unfselected&quot;&gt;UNFOLLOW SELECTED&lt;/button&gt;
-           &lt;button class=&quot;ix-btn ix-by&quot; data-action=&quot;export&quot;&gt;EXPORT CSV&lt;/button&gt;`);
+  IX.foot(`<button class="ix-btn ix-br" data-action="unfselected">UNFOLLOW SELECTED</button>
+           <button class="ix-btn ix-by" data-action="export">EXPORT CSV</button>`);
 })();
-</code></pre>
-    </div>
-  </div>
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">02</span>
-        <span class="tool-name">FOLLOW A USER'S FOLLOWINGS</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-follow">FOLLOW</span>
-      </div>
-    </div>
-    <div class="tool-desc">Opens a panel where you <strong>type a target username</strong> and set a delay, then the script bulk-follows everyone that account follows. A live counter and log show each follow in real time. Hit Stop anytime.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — the panel opens with an input field</div>
-      <div class="step"><span class="step-num">02 ›</span> Type the target username and click Start</div>
-      <div class="step"><span class="step-num">03 ›</span> Watch the live counter — hit Stop anytime</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s2">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -397,7 +563,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -407,7 +573,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -427,7 +593,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -442,133 +608,109 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&quot;FOLLOW A USER&#x27;S FOLLOWINGS&quot;);
+(async () => {
+  IX.title("FOLLOW A USER'S FOLLOWINGS");
   const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!csrf) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H  = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const PH = {...H,&quot;content-type&quot;:&quot;application/x-www-form-urlencoded&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!csrf) { IX.st('❌ Not logged in','c-err'); return; }
+  const H  = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const PH = {...H,"content-type":"application/x-www-form-urlencoded"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;Enter a target username to get started&#x27;);
+  IX.st('Enter a target username to get started');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;TARGET USERNAME&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-username&quot; placeholder=&quot;e.g. natgeo&quot; /&gt;
-      &lt;div class=&quot;ix-label&quot; style=&quot;margin-top:6px&quot;&gt;DELAY BETWEEN FOLLOWS (MS)&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-delay&quot; value=&quot;3600&quot; type=&quot;number&quot; /&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;start&quot; id=&quot;ix-run-btn&quot;&gt;▶ START&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">TARGET USERNAME</div>
+      <input class="ix-inp" id="ix-username" placeholder="e.g. natgeo" />
+      <div class="ix-label" style="margin-top:6px">DELAY BETWEEN FOLLOWS (MS)</div>
+      <input class="ix-inp" id="ix-delay" value="3600" type="number" />
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-bg" data-action="start" id="ix-run-btn">▶ START</button>`);
 
   window._ixStop = false;
-  window._ixA.stop = () =&gt; { window._ixStop = true; };
+  window._ixA.stop = () => { window._ixStop = true; };
 
-  window._ixA.start = async () =&gt; {
-    const username = IX.$(&#x27;ix-username&#x27;)?.value?.trim().replace(&#x27;@&#x27;,&#x27;&#x27;);
-    const delay    = parseInt(IX.$(&#x27;ix-delay&#x27;)?.value) || 3600;
-    if (!username) { IX.st(&#x27;⚠ Enter a username first&#x27;,&#x27;c-warn&#x27;); return; }
+  window._ixA.start = async () => {
+    const username = IX.$('ix-username')?.value?.trim().replace('@','');
+    const delay    = parseInt(IX.$('ix-delay')?.value) || 3600;
+    if (!username) { IX.st('⚠ Enter a username first','c-warn'); return; }
     window._ixA.start = null; // prevent double-click
     window._ixStop = false;
-    IX.foot(`&lt;button class=&quot;ix-btn ix-br&quot; data-action=&quot;stop&quot;&gt;■ STOP&lt;/button&gt;`);
+    IX.foot(`<button class="ix-btn ix-br" data-action="stop">■ STOP</button>`);
 
-    IX.st(&#x27;⏳ Looking up user...&#x27;);
-    const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=&gt;r.json());
+    IX.st('⏳ Looking up user...');
+    const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=>r.json());
     const targetId = uRes?.data?.user?.id;
-    if (!targetId) { IX.st(&#x27;❌ User not found&#x27;,&#x27;c-err&#x27;); return; }
+    if (!targetId) { IX.st('❌ User not found','c-err'); return; }
 
-    let toFollow=[], after=&quot;&quot;, more=true;
+    let toFollow=[], after="", more=true;
     while (more) {
-      const res = await fetch(`https://www.instagram.com/api/v1/friendships/${targetId}/following/?count=200${after?&quot;&amp;max_id=&quot;+after:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-      toFollow.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||&quot;&quot;;
+      const res = await fetch(`https://www.instagram.com/api/v1/friendships/${targetId}/following/?count=200${after?"&max_id="+after:""}`,{headers:H}).then(r=>r.json());
+      toFollow.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||"";
       await sleep(800);
     }
 
     IX.body(`
-      &lt;div class=&quot;ix-counter&quot;&gt;
-        &lt;div class=&quot;ix-num&quot; id=&quot;ix-cnt&quot;&gt;0&lt;/div&gt;
-        &lt;div class=&quot;ix-numlbl&quot;&gt;FOLLOWED&lt;/div&gt;
-        &lt;div class=&quot;ix-subnum&quot;&gt;of ${toFollow.length} accounts&lt;/div&gt;
-      &lt;/div&gt;
-      &lt;div class=&quot;ix-log&quot; id=&quot;ix-log&quot;&gt;&lt;/div&gt;`);
+      <div class="ix-counter">
+        <div class="ix-num" id="ix-cnt">0</div>
+        <div class="ix-numlbl">FOLLOWED</div>
+        <div class="ix-subnum">of ${toFollow.length} accounts</div>
+      </div>
+      <div class="ix-log" id="ix-log"></div>`);
 
     let followed=0;
     for (const user of toFollow) {
-      if (window._ixStop) { IX.st(&#x27;⏸ Stopped&#x27;,&#x27;c-warn&#x27;); break; }
-      const res = await fetch(`https://www.instagram.com/api/v1/friendships/create/${user.pk}/`,{method:&quot;POST&quot;,headers:PH}).then(r=&gt;r.json());
+      if (window._ixStop) { IX.st('⏸ Stopped','c-warn'); break; }
+      const res = await fetch(`https://www.instagram.com/api/v1/friendships/create/${user.pk}/`,{method:"POST",headers:PH}).then(r=>r.json());
       if (res.friendship_status) {
         followed++;
-        IX.$(&#x27;ix-cnt&#x27;).textContent = followed;
+        IX.$('ix-cnt').textContent = followed;
         IX.pb(Math.round(followed/toFollow.length*100));
-        IX.$(&#x27;ix-log&#x27;).insertAdjacentHTML(&#x27;afterbegin&#x27;,`&lt;div class=&quot;ix-li c-ok&quot;&gt;✓ @${user.username}&lt;/div&gt;`);
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-ok">✓ @${user.username}</div>`);
       }
       await sleep(delay);
     }
     if (!window._ixStop) IX.st(`✅ Done! Followed ${followed}`);
   };
 })();
-</code></pre>
-    </div>
-    <div class="warning-box">Max 100 follows/hour. The default 3.6s delay enforces this. Do not run more than once per hour.</div>
-  </div>
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">03</span>
-        <span class="tool-name">MASS UNFOLLOW NON-FOLLOWERS</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-follow">FOLLOW</span>
-      </div>
-    </div>
-    <div class="tool-desc">Opens a panel where you set a <strong>session limit</strong> and a <strong>whitelist</strong> of accounts to protect, then auto-unfollows all non-followers with a live log. Stop button included.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — enter your max and whitelist in the panel</div>
-      <div class="step"><span class="step-num">02 ›</span> Click Start Unfollow — watch the live counter</div>
-      <div class="step"><span class="step-num">03 ›</span> Click Stop anytime to pause the session</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s3">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -583,7 +725,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -593,7 +735,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -613,7 +755,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -628,132 +770,110 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;MASS UNFOLLOW NON-FOLLOWERS&#x27;);
+(async () => {
+  IX.title('MASS UNFOLLOW NON-FOLLOWERS');
   const userId = document.cookie.match(/ds_user_id=(\d+)/)?.[1];
   const csrf   = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!userId) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H  = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const PH = {...H,&quot;content-type&quot;:&quot;application/x-www-form-urlencoded&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!userId) { IX.st('❌ Not logged in','c-err'); return; }
+  const H  = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const PH = {...H,"content-type":"application/x-www-form-urlencoded"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;Configure and start&#x27;);
+  IX.st('Configure and start');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;MAX UNFOLLOWS THIS SESSION&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-max&quot; value=&quot;50&quot; type=&quot;number&quot; /&gt;
-      &lt;div class=&quot;ix-label&quot; style=&quot;margin-top:6px&quot;&gt;WHITELIST (comma-separated usernames)&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-wl&quot; placeholder=&quot;friend1, brandname, ...&quot; style=&quot;height:70px&quot; /&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-br&quot; data-action=&quot;start&quot;&gt;▶ START UNFOLLOW&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">MAX UNFOLLOWS THIS SESSION</div>
+      <input class="ix-inp" id="ix-max" value="50" type="number" />
+      <div class="ix-label" style="margin-top:6px">WHITELIST (comma-separated usernames)</div>
+      <input class="ix-inp" id="ix-wl" placeholder="friend1, brandname, ..." style="height:70px" />
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-br" data-action="start">▶ START UNFOLLOW</button>`);
   window._ixStop = false;
-  window._ixA.stop = () =&gt; { window._ixStop = true; };
+  window._ixA.stop = () => { window._ixStop = true; };
 
-  window._ixA.start = async () =&gt; {
-    const maxUnf = parseInt(IX.$(&#x27;ix-max&#x27;)?.value)||50;
-    const wl = (IX.$(&#x27;ix-wl&#x27;)?.value||&#x27;&#x27;).split(&#x27;,&#x27;).map(s=&gt;s.trim().replace(&#x27;@&#x27;,&#x27;&#x27;)).filter(Boolean);
+  window._ixA.start = async () => {
+    const maxUnf = parseInt(IX.$('ix-max')?.value)||50;
+    const wl = (IX.$('ix-wl')?.value||'').split(',').map(s=>s.trim().replace('@','')).filter(Boolean);
     window._ixA.start = null;
     window._ixStop = false;
-    IX.foot(`&lt;button class=&quot;ix-btn ix-by&quot; data-action=&quot;stop&quot;&gt;■ STOP&lt;/button&gt;`);
+    IX.foot(`<button class="ix-btn ix-by" data-action="stop">■ STOP</button>`);
 
-    const getList = async type =&gt; {
-      let list=[], after=&quot;&quot;, more=true;
+    const getList = async type => {
+      let list=[], after="", more=true;
       while (more) {
         IX.st(`⏳ Loading ${type}... (${list.length})`);
-        const res = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200${after?&quot;&amp;max_id=&quot;+after:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-        list.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||&quot;&quot;;
+        const res = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200${after?"&max_id="+after:""}`,{headers:H}).then(r=>r.json());
+        list.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||"";
         await sleep(600);
       }
       return list;
     };
 
-    const following = await getList(&#x27;following&#x27;);
-    const followers = await getList(&#x27;followers&#x27;);
-    const fIds = new Set(followers.map(u=&gt;u.pk));
-    const targets = following.filter(u=&gt;!fIds.has(u.pk)&amp;&amp;!wl.includes(u.username)).slice(0,maxUnf);
+    const following = await getList('following');
+    const followers = await getList('followers');
+    const fIds = new Set(followers.map(u=>u.pk));
+    const targets = following.filter(u=>!fIds.has(u.pk)&&!wl.includes(u.username)).slice(0,maxUnf);
 
     IX.body(`
-      &lt;div class=&quot;ix-counter&quot;&gt;
-        &lt;div class=&quot;ix-num&quot; id=&quot;ix-cnt&quot;&gt;0&lt;/div&gt;
-        &lt;div class=&quot;ix-numlbl&quot;&gt;UNFOLLOWED&lt;/div&gt;
-        &lt;div class=&quot;ix-subnum&quot;&gt;of ${targets.length} targets&lt;/div&gt;
-      &lt;/div&gt;
-      &lt;div class=&quot;ix-log&quot; id=&quot;ix-log&quot;&gt;&lt;/div&gt;`);
+      <div class="ix-counter">
+        <div class="ix-num" id="ix-cnt">0</div>
+        <div class="ix-numlbl">UNFOLLOWED</div>
+        <div class="ix-subnum">of ${targets.length} targets</div>
+      </div>
+      <div class="ix-log" id="ix-log"></div>`);
 
     let count=0;
     for (const u of targets) {
-      if (window._ixStop) { IX.st(&#x27;⏸ Stopped&#x27;,&#x27;c-warn&#x27;); break; }
-      await fetch(`https://www.instagram.com/api/v1/friendships/destroy/${u.pk}/`,{method:&quot;POST&quot;,headers:PH});
+      if (window._ixStop) { IX.st('⏸ Stopped','c-warn'); break; }
+      await fetch(`https://www.instagram.com/api/v1/friendships/destroy/${u.pk}/`,{method:"POST",headers:PH});
       count++;
-      IX.$(&#x27;ix-cnt&#x27;).textContent = count;
+      IX.$('ix-cnt').textContent = count;
       IX.pb(Math.round(count/targets.length*100));
-      IX.$(&#x27;ix-log&#x27;).insertAdjacentHTML(&#x27;afterbegin&#x27;,`&lt;div class=&quot;ix-li c-err&quot;&gt;✗ @${u.username}&lt;/div&gt;`);
+      IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-err">✗ @${u.username}</div>`);
       await sleep(3600);
     }
     if (!window._ixStop) IX.st(`✅ Done! Unfollowed ${count}`);
   };
 })();
-</code></pre>
-    </div>
-  </div>
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">04</span>
-        <span class="tool-name">EXPORT FOLLOWERS / FOLLOWING TO CSV</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-follow">FOLLOW</span>
-      </div>
-    </div>
-    <div class="tool-desc">Lets you choose to export <strong>followers or following</strong> from a dropdown, then downloads a complete CSV with username, full name, profile URL, private status and follower count.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — choose followers or following in the panel</div>
-      <div class="step"><span class="step-num">02 ›</span> Click Export CSV — file downloads automatically when ready</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s4">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -768,7 +888,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -778,7 +898,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -798,7 +918,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -813,121 +933,94 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;EXPORT FOLLOWERS / FOLLOWING&#x27;);
+(async () => {
+  IX.title('EXPORT FOLLOWERS / FOLLOWING');
   const userId = document.cookie.match(/ds_user_id=(\d+)/)?.[1];
   const csrf   = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!userId) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!userId) { IX.st('❌ Not logged in','c-err'); return; }
+  const H = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;Choose what to export&#x27;);
+  IX.st('Choose what to export');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;EXPORT TYPE&lt;/div&gt;
-      &lt;select class=&quot;ix-inp&quot; id=&quot;ix-type&quot; style=&quot;cursor:pointer&quot;&gt;
-        &lt;option value=&quot;followers&quot;&gt;Followers&lt;/option&gt;
-        &lt;option value=&quot;following&quot;&gt;Following&lt;/option&gt;
-      &lt;/select&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;export&quot;&gt;⬇ EXPORT CSV&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">EXPORT TYPE</div>
+      <select class="ix-inp" id="ix-type" style="cursor:pointer">
+        <option value="followers">Followers</option>
+        <option value="following">Following</option>
+      </select>
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-bg" data-action="export">⬇ EXPORT CSV</button>`);
 
-  window._ixA.export = async () =&gt; {
-    const type = IX.$(&#x27;ix-type&#x27;)?.value || &#x27;followers&#x27;;
-    IX.foot(&#x27;&#x27;);
-    IX.body(`&lt;div class=&quot;ix-counter&quot;&gt;&lt;div class=&quot;ix-num&quot; id=&quot;ix-cnt&quot;&gt;0&lt;/div&gt;&lt;div class=&quot;ix-numlbl&quot;&gt;LOADED&lt;/div&gt;&lt;div class=&quot;ix-subnum&quot;&gt;fetching ${type}...&lt;/div&gt;&lt;/div&gt;`);
+  window._ixA.export = async () => {
+    const type = IX.$('ix-type')?.value || 'followers';
+    IX.foot('');
+    IX.body(`<div class="ix-counter"><div class="ix-num" id="ix-cnt">0</div><div class="ix-numlbl">LOADED</div><div class="ix-subnum">fetching ${type}...</div></div>`);
 
-    let list=[], after=&quot;&quot;, more=true;
+    let list=[], after="", more=true;
     while (more) {
       IX.st(`⏳ Fetching ${type}... (${list.length} loaded)`);
-      const res = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200${after?&quot;&amp;max_id=&quot;+after:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-      list.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||&quot;&quot;;
-      IX.$(&#x27;ix-cnt&#x27;).textContent = list.length;
+      const res = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/${type}/?count=200${after?"&max_id="+after:""}`,{headers:H}).then(r=>r.json());
+      list.push(...(res.users||[])); more=!!res.next_max_id; after=res.next_max_id||"";
+      IX.$('ix-cnt').textContent = list.length;
       await sleep(600);
     }
     IX.pb(100); IX.st(`✅ ${list.length} ${type} ready`);
 
-    const csv = [&#x27;username,full_name,profile_url,is_private&#x27;,
-      ...list.map(u=&gt;`@${u.username},&quot;${(u.full_name||&#x27;&#x27;).replace(/&quot;/g,&#x27;&quot;&quot;&#x27;)}&quot;,https://instagram.com/${u.username},${u.is_private}`)
-    ].join(&#x27;\n&#x27;);
-    const a = Object.assign(document.createElement(&#x27;a&#x27;),{href:URL.createObjectURL(new Blob([csv],{type:&#x27;text/csv&#x27;})),download:`ignitx_${type}.csv`});
+    const csv = ['username,full_name,profile_url,is_private',
+      ...list.map(u=>`@${u.username},"${(u.full_name||'').replace(/"/g,'""')}",https://instagram.com/${u.username},${u.is_private}`)
+    ].join('\n');
+    const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:`ignitx_${type}.csv`});
     document.body.appendChild(a); a.click(); a.remove();
 
-    IX.body(`&lt;div class=&quot;ix-card&quot;&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;EXPORT TYPE&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;${type.toUpperCase()}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;TOTAL RECORDS&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;${list.length}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;STATUS&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;✅ DOWNLOADED&lt;/div&gt;&lt;/div&gt;
-    &lt;/div&gt;`);
-    IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;again&quot;&gt;↺ EXPORT AGAIN&lt;/button&gt;`);
-    window._ixA.again = () =&gt; { window._ixA.export = null; location.reload(); };
+    IX.body(`<div class="ix-card">
+      <div class="ix-srow"><div class="ix-slbl">EXPORT TYPE</div><div class="ix-sval">${type.toUpperCase()}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">TOTAL RECORDS</div><div class="ix-sval">${list.length}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">STATUS</div><div class="ix-sval">✅ DOWNLOADED</div></div>
+    </div>`);
+    IX.foot(`<button class="ix-btn ix-bg" data-action="again">↺ EXPORT AGAIN</button>`);
+    window._ixA.again = () => { window._ixA.export = null; location.reload(); };
   };
 })();
-</code></pre>
-    </div>
-  </div>
-
-</section>
-
-<!-- ══════════════ ENGAGEMENT ══════════════ -->
-<section class="tool-section" id="tab-engage">
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">05</span>
-        <span class="tool-name">LIKE TAGGED POSTS OF A USER</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-engage">ENGAGE</span>
-      </div>
-    </div>
-    <div class="tool-desc">Opens a panel where you <strong>type a username</strong> and a like limit. The script then likes all posts that account is tagged in, showing a live counter and per-post log. Stop button included.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — enter target username and max likes</div>
-      <div class="step"><span class="step-num">02 ›</span> Click Start Liking — watch the live counter and log</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s5">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -942,7 +1035,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -952,7 +1045,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -972,7 +1065,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -987,129 +1080,132 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;LIKE TAGGED POSTS OF A USER&#x27;);
+(async () => {
+  IX.title('LIKE TAGGED POSTS OF A USER');
   const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!csrf) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H  = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const PH = {...H,&quot;content-type&quot;:&quot;application/x-www-form-urlencoded&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!csrf) { IX.st('❌ Not logged in','c-err'); return; }
+  const H  = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const PH = {...H,"content-type":"application/x-www-form-urlencoded"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;Enter a username to like their tagged posts&#x27;);
+  IX.st('Enter a username to like their tagged posts');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;TARGET USERNAME&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-user&quot; placeholder=&quot;e.g. natgeo&quot; /&gt;
-      &lt;div class=&quot;ix-label&quot; style=&quot;margin-top:6px&quot;&gt;MAX POSTS TO LIKE&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-max&quot; value=&quot;30&quot; type=&quot;number&quot; /&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;start&quot;&gt;▶ START LIKING&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">TARGET USERNAME</div>
+      <input class="ix-inp" id="ix-user" placeholder="e.g. natgeo" />
+      <div class="ix-label" style="margin-top:6px">MAX POSTS TO LIKE</div>
+      <input class="ix-inp" id="ix-max" value="30" type="number" />
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-bg" data-action="start">▶ START LIKING</button>`);
   window._ixStop = false;
-  window._ixA.stop = () =&gt; { window._ixStop = true; };
+  window._ixA.stop = () => { window._ixStop = true; };
 
-  window._ixA.start = async () =&gt; {
-    const username = (IX.$(&#x27;ix-user&#x27;)?.value||&#x27;&#x27;).trim().replace(&#x27;@&#x27;,&#x27;&#x27;);
-    const maxLikes = parseInt(IX.$(&#x27;ix-max&#x27;)?.value)||30;
-    if (!username) { IX.st(&#x27;⚠ Enter a username first&#x27;,&#x27;c-warn&#x27;); return; }
+  window._ixA.start = async () => {
+    const username = (IX.$('ix-user')?.value||'').trim().replace('@','');
+    const maxLikes = parseInt(IX.$('ix-max')?.value)||30;
+    if (!username) { IX.st('⚠ Enter a username first','c-warn'); return; }
     window._ixA.start = null;
     window._ixStop = false;
-    IX.foot(`&lt;button class=&quot;ix-btn ix-br&quot; data-action=&quot;stop&quot;&gt;■ STOP&lt;/button&gt;`);
+    IX.foot(`<button class="ix-btn ix-br" data-action="stop">■ STOP</button>`);
 
-    IX.st(&#x27;⏳ Looking up user...&#x27;);
-    const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=&gt;r.json());
+    IX.st('⏳ Looking up user...');
+    const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=>r.json());
     const targetId = uRes?.data?.user?.id;
-    if (!targetId) { IX.st(&#x27;❌ User not found&#x27;,&#x27;c-err&#x27;); return; }
+    if (!targetId) { IX.st('❌ User not found','c-err'); return; }
 
-    let posts=[], cursor=&quot;&quot;, more=true;
-    while (more &amp;&amp; posts.length &lt; maxLikes) {
-      const r = await fetch(`https://www.instagram.com/api/v1/usertags/${targetId}/feed/?count=20${cursor?&quot;&amp;max_id=&quot;+cursor:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-      posts.push(...(r.items||[])); more=!!r.next_max_id; cursor=r.next_max_id||&quot;&quot;;
+    let posts=[], cursor="", more=true;
+    while (more && posts.length < maxLikes) {
+      const r = await fetch(`https://www.instagram.com/api/v1/usertags/${targetId}/feed/?count=20${cursor?"&max_id="+cursor:""}`,{headers:H}).then(r=>r.json());
+      posts.push(...(r.items||[])); more=!!r.next_max_id; cursor=r.next_max_id||"";
       await sleep(600);
     }
-    posts = posts.filter(p=&gt;!p.has_liked).slice(0,maxLikes);
+    posts = posts.filter(p=>!p.has_liked).slice(0,maxLikes);
 
     IX.body(`
-      &lt;div class=&quot;ix-counter&quot;&gt;
-        &lt;div class=&quot;ix-num&quot; id=&quot;ix-cnt&quot;&gt;0&lt;/div&gt;
-        &lt;div class=&quot;ix-numlbl&quot;&gt;LIKED&lt;/div&gt;
-        &lt;div class=&quot;ix-subnum&quot;&gt;of ${posts.length} posts&lt;/div&gt;
-      &lt;/div&gt;
-      &lt;div class=&quot;ix-log&quot; id=&quot;ix-log&quot;&gt;&lt;/div&gt;`);
+      <div class="ix-counter">
+        <div class="ix-num" id="ix-cnt">0</div>
+        <div class="ix-numlbl">LIKED</div>
+        <div class="ix-subnum">of ${posts.length} posts</div>
+      </div>
+      <div class="ix-log" id="ix-log"></div>`);
 
-    let liked=0;
+    const doLike = async (mediaId) => {
+      const raw = await fetch(`https://www.instagram.com/api/v1/media/${mediaId}/like/`, {
+        method: "POST", headers: PH, body: `d=1`, redirect: 'manual', credentials: 'include'
+      }).catch(() => null);
+      if (!raw || raw.type === 'opaqueredirect' || raw.status === 302) return {_challenge: true};
+      if (!raw.ok) return {_err: raw.status};
+      try { return await raw.json(); } catch { return {_err: 'parse'}; }
+    };
+
+    let liked=0, errors=0;
     for (const post of posts) {
-      if (window._ixStop) { IX.st(&#x27;⏸ Stopped&#x27;,&#x27;c-warn&#x27;); break; }
-      await fetch(`https://www.instagram.com/api/v1/media/${post.pk}/like/`,{method:&quot;POST&quot;,headers:PH});
-      liked++;
-      IX.$(&#x27;ix-cnt&#x27;).textContent = liked;
-      IX.pb(Math.round(liked/posts.length*100));
-      IX.$(&#x27;ix-log&#x27;).insertAdjacentHTML(&#x27;afterbegin&#x27;,`&lt;div class=&quot;ix-li c-ok&quot;&gt;❤ post ${liked}&lt;/div&gt;`);
-      await sleep(4000);
+      if (window._ixStop) { IX.st('⏸ Stopped','c-warn'); break; }
+      const mediaId = post.id || post.pk;
+      const res = await doLike(mediaId);
+
+      if (res._challenge) {
+        IX.st('⚠ Instagram issued a challenge — go to instagram.com, resolve it, then retry','c-warn'); break;
+      } else if (res._err) {
+        errors++;
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-warn">⚠ skipped (HTTP ${res._err})</div>`);
+        if (errors >= 3) { IX.st('❌ Too many errors — stopping','c-err'); break; }
+      } else if (res.status === 'ok') {
+        liked++; errors = 0;
+        IX.$('ix-cnt').textContent = liked;
+        IX.pb(Math.round(liked/posts.length*100));
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-ok">❤ @${post.user?.username||'post '+liked}</div>`);
+      } else if (res.message === 'feedback_required') {
+        IX.st('⚠ Rate limited — wait 1 hour then try again','c-warn'); break;
+      } else {
+        errors++;
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-warn">⚠ skipped: ${res.message||'unknown'}</div>`);
+        if (errors >= 3) { IX.st('❌ Too many errors — stopping','c-err'); break; }
+      }
+      await sleep(5000);
     }
-    if (!window._ixStop) IX.st(`✅ Done! Liked ${liked} tagged posts of @${username}`);
+    if (!window._ixStop) IX.st(`✅ Done! ${liked} liked, ${errors} skipped for @${username}`);
   };
 })();
-</code></pre>
-    </div>
-  </div>
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">06</span>
-        <span class="tool-name">LIKE POSTS BY HASHTAG</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-engage">ENGAGE</span>
-      </div>
-    </div>
-    <div class="tool-desc">Opens a panel where you enter a <strong>hashtag and a limit</strong>. Likes the most recent posts under that tag with a live counter showing each liked account. Stop anytime.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — type your hashtag (no # needed) and max likes</div>
-      <div class="step"><span class="step-num">02 ›</span> Click Start — see each liked post appear in the live log</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s6">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -1124,7 +1220,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -1134,7 +1230,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -1154,7 +1250,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -1169,128 +1265,135 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;LIKE POSTS BY HASHTAG&#x27;);
+(async () => {
+  IX.title('LIKE POSTS BY HASHTAG');
   const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!csrf) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H  = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const PH = {...H,&quot;content-type&quot;:&quot;application/x-www-form-urlencoded&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!csrf) { IX.st('❌ Not logged in','c-err'); return; }
+  const H  = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const PH = {...H,"content-type":"application/x-www-form-urlencoded"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;Enter a hashtag to start liking&#x27;);
+  IX.st('Enter a hashtag to start liking');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;HASHTAG (no # symbol)&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-tag&quot; placeholder=&quot;e.g. streetphotography&quot; /&gt;
-      &lt;div class=&quot;ix-label&quot; style=&quot;margin-top:6px&quot;&gt;MAX POSTS TO LIKE&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-max&quot; value=&quot;20&quot; type=&quot;number&quot; /&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;start&quot;&gt;▶ START LIKING&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">HASHTAG (no # symbol)</div>
+      <input class="ix-inp" id="ix-tag" placeholder="e.g. streetphotography" />
+      <div class="ix-label" style="margin-top:6px">MAX POSTS TO LIKE</div>
+      <input class="ix-inp" id="ix-max" value="20" type="number" />
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-bg" data-action="start">▶ START LIKING</button>`);
   window._ixStop = false;
-  window._ixA.stop = () =&gt; { window._ixStop = true; };
+  window._ixA.stop = () => { window._ixStop = true; };
 
-  window._ixA.start = async () =&gt; {
-    const tag = (IX.$(&#x27;ix-tag&#x27;)?.value||&#x27;&#x27;).trim().replace(&#x27;#&#x27;,&#x27;&#x27;);
-    const maxLikes = parseInt(IX.$(&#x27;ix-max&#x27;)?.value)||20;
-    if (!tag) { IX.st(&#x27;⚠ Enter a hashtag first&#x27;,&#x27;c-warn&#x27;); return; }
+  window._ixA.start = async () => {
+    const tag = (IX.$('ix-tag')?.value||'').trim().replace('#','');
+    const maxLikes = parseInt(IX.$('ix-max')?.value)||20;
+    if (!tag) { IX.st('⚠ Enter a hashtag first','c-warn'); return; }
     window._ixA.start = null;
     window._ixStop = false;
-    IX.foot(`&lt;button class=&quot;ix-btn ix-br&quot; data-action=&quot;stop&quot;&gt;■ STOP&lt;/button&gt;`);
+    IX.foot(`<button class="ix-btn ix-br" data-action="stop">■ STOP</button>`);
 
     IX.st(`⏳ Fetching recent posts for #${tag}...`);
-    const feedRes = await fetch(`https://www.instagram.com/api/v1/tags/${tag}/sections/?tab=recent&amp;count=50`,{method:&quot;POST&quot;,headers:PH}).then(r=&gt;r.json());
+    // Fix 1: POST body must contain params, not URL query string
+    const feedRes = await fetch(`https://www.instagram.com/api/v1/tags/${tag}/sections/`, {
+      method: "POST",
+      headers: PH,
+      body: `tab=recent&page=1&max_id=&next_max_id=&include_upi=0`
+    }).then(r=>r.json());
+
     const posts = [];
-    (feedRes.sections||[]).forEach(s=&gt;(s.layout_content?.medias||[]).forEach(m=&gt;posts.push(m.media)));
-    const targets = posts.filter(p=&gt;p&amp;&amp;!p.has_liked).slice(0,maxLikes);
-    if (!targets.length) { IX.st(&#x27;⚠ No new posts found&#x27;,&#x27;c-warn&#x27;); return; }
+    (feedRes.sections||[]).forEach(s=>(s.layout_content?.medias||[]).forEach(m=>{ if(m.media) posts.push(m.media); }));
+
+    // Fix 2: filter unliked, use id (full media id string) with pk as fallback
+    const targets = posts.filter(p=>p && !p.has_liked && (p.id||p.pk)).slice(0,maxLikes);
+    if (!targets.length) { IX.st('⚠ No new posts found for #'+tag+'. Try another hashtag.','c-warn'); return; }
 
     IX.body(`
-      &lt;div class=&quot;ix-counter&quot;&gt;
-        &lt;div class=&quot;ix-num&quot; id=&quot;ix-cnt&quot;&gt;0&lt;/div&gt;
-        &lt;div class=&quot;ix-numlbl&quot;&gt;LIKED&lt;/div&gt;
-        &lt;div class=&quot;ix-subnum&quot;&gt;under #${tag}&lt;/div&gt;
-      &lt;/div&gt;
-      &lt;div class=&quot;ix-log&quot; id=&quot;ix-log&quot;&gt;&lt;/div&gt;`);
+      <div class="ix-counter">
+        <div class="ix-num" id="ix-cnt">0</div>
+        <div class="ix-numlbl">LIKED</div>
+        <div class="ix-subnum">under #${tag}</div>
+      </div>
+      <div class="ix-log" id="ix-log"></div>`);
 
-    let count=0;
+    const doLike = async (mediaId) => {
+      // redirect:'manual' prevents CORS crash when Instagram issues a challenge redirect
+      const raw = await fetch(`https://www.instagram.com/api/v1/media/${mediaId}/like/`, {
+        method: "POST", headers: PH, body: `d=1`, redirect: 'manual', credentials: 'include'
+      }).catch(() => null);
+      if (!raw || raw.type === 'opaqueredirect' || raw.status === 302) return {_challenge: true};
+      if (!raw.ok) return {_err: raw.status};
+      try { return await raw.json(); } catch { return {_err: 'parse'}; }
+    };
+
+    let count=0, errors=0;
     for (const post of targets) {
-      if (window._ixStop) { IX.st(&#x27;⏸ Stopped&#x27;,&#x27;c-warn&#x27;); break; }
-      await fetch(`https://www.instagram.com/api/v1/media/${post.pk}/like/`,{method:&quot;POST&quot;,headers:PH});
-      count++;
-      IX.$(&#x27;ix-cnt&#x27;).textContent = count;
-      IX.pb(Math.round(count/targets.length*100));
-      IX.$(&#x27;ix-log&#x27;).insertAdjacentHTML(&#x27;afterbegin&#x27;,`&lt;div class=&quot;ix-li c-ok&quot;&gt;❤ @${post.user?.username||&#x27;...&#x27;}&lt;/div&gt;`);
-      await sleep(4500);
+      if (window._ixStop) { IX.st('⏸ Stopped','c-warn'); break; }
+      const mediaId = post.id || post.pk;
+      const res = await doLike(mediaId);
+
+      if (res._challenge) {
+        IX.st('⚠ Instagram issued a challenge — go to instagram.com, resolve it, then retry','c-warn'); break;
+      } else if (res._err) {
+        errors++;
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-warn">⚠ skipped (HTTP ${res._err})</div>`);
+        if (errors >= 3) { IX.st('❌ Too many errors — stopping','c-err'); break; }
+      } else if (res.status === 'ok') {
+        count++; errors = 0;
+        IX.$('ix-cnt').textContent = count;
+        IX.pb(Math.round(count/targets.length*100));
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-ok">❤ @${post.user?.username||'...'}</div>`);
+      } else if (res.message === 'feedback_required') {
+        IX.st('⚠ Rate limited — wait 1 hour then try again','c-warn'); break;
+      } else {
+        errors++;
+        IX.$('ix-log').insertAdjacentHTML('afterbegin',`<div class="ix-li c-warn">⚠ skipped: ${res.message||'unknown'}</div>`);
+        if (errors >= 3) { IX.st('❌ Too many errors — stopping','c-err'); break; }
+      }
+      await sleep(5000);
     }
-    if (!window._ixStop) IX.st(`✅ Done! ${count} posts liked under #${tag}`);
+    if (!window._ixStop) IX.st(`✅ Done! ${count} liked, ${errors} skipped under #${tag}`);
   };
 })();
-</code></pre>
-    </div>
-  </div>
-
-</section>
-
-<!-- ══════════════ ANALYTICS ══════════════ -->
-<section class="tool-section" id="tab-analytics">
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">07</span>
-        <span class="tool-name">ENGAGEMENT RATE CALCULATOR</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-analytics">ANALYTICS</span>
-      </div>
-    </div>
-    <div class="tool-desc">Opens a panel with a <strong>username input</strong>. Analyzes the last 12 posts of any public account and displays a clean stats card: followers, avg likes, avg comments, engagement rate %, and a rated verdict.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — type any public username</div>
-      <div class="step"><span class="step-num">02 ›</span> Click Analyze — a stats card appears with all metrics</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s7">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -1305,7 +1408,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -1315,7 +1418,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -1335,7 +1438,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -1350,116 +1453,94 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;ENGAGEMENT RATE CALCULATOR&#x27;);
+(async () => {
+  IX.title('ENGAGEMENT RATE CALCULATOR');
   const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  const H = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
+  const H = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
 
-  IX.st(&#x27;Analyze any public account&#x27;);
+  IX.st('Analyze any public account');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;USERNAME TO ANALYZE&lt;/div&gt;
-      &lt;input class=&quot;ix-inp&quot; id=&quot;ix-user&quot; placeholder=&quot;e.g. natgeo&quot; /&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;analyze&quot;&gt;▶ ANALYZE&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">USERNAME TO ANALYZE</div>
+      <input class="ix-inp" id="ix-user" placeholder="e.g. natgeo" />
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-bg" data-action="analyze">▶ ANALYZE</button>`);
 
-  window._ixA.analyze = async () =&gt; {
-    const username = (IX.$(&#x27;ix-user&#x27;)?.value||&#x27;&#x27;).trim().replace(&#x27;@&#x27;,&#x27;&#x27;);
-    if (!username) { IX.st(&#x27;⚠ Enter a username first&#x27;,&#x27;c-warn&#x27;); return; }
+  window._ixA.analyze = async () => {
+    const username = (IX.$('ix-user')?.value||'').trim().replace('@','');
+    if (!username) { IX.st('⚠ Enter a username first','c-warn'); return; }
     IX.st(`⏳ Looking up @${username}...`); IX.pb(20);
-    const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=&gt;r.json());
+    const uRes = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,{headers:H}).then(r=>r.json());
     const user = uRes?.data?.user;
-    if (!user) { IX.st(&#x27;❌ User not found or private&#x27;,&#x27;c-err&#x27;); return; }
+    if (!user) { IX.st('❌ User not found or private','c-err'); return; }
     const followers = user.edge_followed_by?.count || user.follower_count || 0;
     const userId = user.id;
     IX.st(`⏳ Fetching posts for @${username}...`); IX.pb(50);
     // web_profile_info no longer returns posts — use feed endpoint directly
-    const feedRes = await fetch(`https://www.instagram.com/api/v1/feed/user/${userId}/?count=12`,{headers:H}).then(r=&gt;r.json());
+    const feedRes = await fetch(`https://www.instagram.com/api/v1/feed/user/${userId}/?count=12`,{headers:H}).then(r=>r.json());
     const posts = feedRes.items || [];
-    if (!posts.length) { IX.st(&#x27;⚠ No posts found — account may be private&#x27;,&#x27;c-warn&#x27;); return; }
+    if (!posts.length) { IX.st('⚠ No posts found — account may be private','c-warn'); return; }
     IX.pb(90);
-    const totalLikes    = posts.reduce((s,p)=&gt;s+(p.like_count||0),0);
-    const totalComments = posts.reduce((s,p)=&gt;s+(p.comment_count||0),0);
+    const totalLikes    = posts.reduce((s,p)=>s+(p.like_count||0),0);
+    const totalComments = posts.reduce((s,p)=>s+(p.comment_count||0),0);
     const avgLikes    = Math.round(totalLikes/posts.length);
     const avgComments = Math.round(totalComments/posts.length);
     const er = ((totalLikes+totalComments)/(posts.length*followers)*100).toFixed(2);
-    const erClass = er&gt;6?&#x27;good&#x27;:er&gt;3?&#x27;good&#x27;:er&gt;1?&#x27;avg&#x27;:&#x27;low&#x27;;
-    const erLabel = er&gt;6?&#x27;🔥 EXCELLENT&#x27;:er&gt;3?&#x27;✅ GOOD&#x27;:er&gt;1?&#x27;⚠ AVERAGE&#x27;:&#x27;❌ LOW&#x27;;
+    const erClass = er>6?'good':er>3?'good':er>1?'avg':'low';
+    const erLabel = er>6?'🔥 EXCELLENT':er>3?'✅ GOOD':er>1?'⚠ AVERAGE':'❌ LOW';
     IX.pb(100); IX.st(`✅ Analysis done`);
-    IX.body(`&lt;div class=&quot;ix-card&quot;&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;ACCOUNT&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;@${username}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;FOLLOWERS&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;${followers.toLocaleString()}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;POSTS ANALYZED&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;${posts.length}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;AVG LIKES&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;${avgLikes.toLocaleString()}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;AVG COMMENTS&lt;/div&gt;&lt;div class=&quot;ix-sval&quot;&gt;${avgComments.toLocaleString()}&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;ENGAGEMENT RATE&lt;/div&gt;&lt;div class=&quot;ix-sval big ${erClass}&quot;&gt;${er}%&lt;/div&gt;&lt;/div&gt;
-      &lt;div class=&quot;ix-srow&quot;&gt;&lt;div class=&quot;ix-slbl&quot;&gt;RATING&lt;/div&gt;&lt;div class=&quot;ix-sval ${erClass}&quot;&gt;${erLabel}&lt;/div&gt;&lt;/div&gt;
-    &lt;/div&gt;`);
-    IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;again&quot;&gt;↺ ANALYZE ANOTHER&lt;/button&gt;`);
-    window._ixA.again = () =&gt; { IX.body(`&lt;div class=&quot;ix-input-wrap&quot;&gt;&lt;div class=&quot;ix-label&quot;&gt;USERNAME TO ANALYZE&lt;/div&gt;&lt;input class=&quot;ix-inp&quot; id=&quot;ix-user&quot; placeholder=&quot;e.g. natgeo&quot; /&gt;&lt;/div&gt;`); IX.pb(0); IX.st(&#x27;Analyze any public account&#x27;); IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;analyze&quot;&gt;▶ ANALYZE&lt;/button&gt;`); };
+    IX.body(`<div class="ix-card">
+      <div class="ix-srow"><div class="ix-slbl">ACCOUNT</div><div class="ix-sval">@${username}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">FOLLOWERS</div><div class="ix-sval">${followers.toLocaleString()}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">POSTS ANALYZED</div><div class="ix-sval">${posts.length}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">AVG LIKES</div><div class="ix-sval">${avgLikes.toLocaleString()}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">AVG COMMENTS</div><div class="ix-sval">${avgComments.toLocaleString()}</div></div>
+      <div class="ix-srow"><div class="ix-slbl">ENGAGEMENT RATE</div><div class="ix-sval big ${erClass}">${er}%</div></div>
+      <div class="ix-srow"><div class="ix-slbl">RATING</div><div class="ix-sval ${erClass}">${erLabel}</div></div>
+    </div>`);
+    IX.foot(`<button class="ix-btn ix-bg" data-action="again">↺ ANALYZE ANOTHER</button>`);
+    window._ixA.again = () => { IX.body(`<div class="ix-input-wrap"><div class="ix-label">USERNAME TO ANALYZE</div><input class="ix-inp" id="ix-user" placeholder="e.g. natgeo" /></div>`); IX.pb(0); IX.st('Analyze any public account'); IX.foot(`<button class="ix-btn ix-bg" data-action="analyze">▶ ANALYZE</button>`); };
   };
 })();
-</code></pre>
-    </div>
-  </div>
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">08</span>
-        <span class="tool-name">GHOST FOLLOWER FINDER</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-analytics">ANALYTICS</span>
-      </div>
-    </div>
-    <div class="tool-desc">Automatically runs on your account — no input needed. Shows a <strong>scrollable list of ghost followers</strong> (those who never liked any of your last 12 posts) with a ghost rate percentage and CSV export.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — the panel starts scanning automatically</div>
-      <div class="step"><span class="step-num">02 ›</span> Results appear as a list — export to CSV if needed</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s8">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -1474,7 +1555,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -1484,7 +1565,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -1504,7 +1585,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -1519,135 +1600,112 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;GHOST FOLLOWER FINDER&#x27;);
+(async () => {
+  IX.title('GHOST FOLLOWER FINDER');
   const userId = document.cookie.match(/ds_user_id=(\d+)/)?.[1];
   const csrf   = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  if (!userId) { IX.st(&#x27;❌ Not logged in&#x27;,&#x27;c-err&#x27;); return; }
-  const H = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  if (!userId) { IX.st('❌ Not logged in','c-err'); return; }
+  const H = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;⏳ Fetching your recent posts...&#x27;);
-  IX.body(`&lt;div class=&quot;ix-counter&quot;&gt;&lt;div class=&quot;ix-num&quot;&gt;...&lt;/div&gt;&lt;div class=&quot;ix-numlbl&quot;&gt;SCANNING&lt;/div&gt;&lt;/div&gt;`);
+  IX.st('⏳ Fetching your recent posts...');
+  IX.body(`<div class="ix-counter"><div class="ix-num">...</div><div class="ix-numlbl">SCANNING</div></div>`);
 
-  let posts=[], cursor=&quot;&quot;, more=true;
-  while (more &amp;&amp; posts.length &lt; 12) {
-    const res = await fetch(`https://www.instagram.com/api/v1/feed/user/${userId}/?count=12${cursor?&quot;&amp;max_id=&quot;+cursor:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-    if (!res.items) { IX.st(&#x27;❌ Could not fetch posts&#x27;,&#x27;c-err&#x27;); return; }
-    posts.push(...res.items); more=!!res.next_max_id; cursor=res.next_max_id||&quot;&quot;;
+  let posts=[], cursor="", more=true;
+  while (more && posts.length < 12) {
+    const res = await fetch(`https://www.instagram.com/api/v1/feed/user/${userId}/?count=12${cursor?"&max_id="+cursor:""}`,{headers:H}).then(r=>r.json());
+    if (!res.items) { IX.st('❌ Could not fetch posts','c-err'); return; }
+    posts.push(...res.items); more=!!res.next_max_id; cursor=res.next_max_id||"";
     await sleep(500);
   }
   posts = posts.slice(0,12);
-  if (!posts.length) { IX.st(&#x27;⚠ No posts found&#x27;,&#x27;c-warn&#x27;); return; }
+  if (!posts.length) { IX.st('⚠ No posts found','c-warn'); return; }
 
   IX.st(`⏳ Scanning likers across ${posts.length} posts...`); IX.pb(10);
   const engagers = new Set();
-  for (let i=0; i&lt;posts.length; i++) {
-    const likers = await fetch(`https://www.instagram.com/api/v1/media/${posts[i].pk}/likers/`,{headers:H}).then(r=&gt;r.json());
-    (likers.users||[]).forEach(u=&gt;engagers.add(u.pk));
+  for (let i=0; i<posts.length; i++) {
+    const likers = await fetch(`https://www.instagram.com/api/v1/media/${posts[i].pk}/likers/`,{headers:H}).then(r=>r.json());
+    (likers.users||[]).forEach(u=>engagers.add(u.pk));
     IX.pb(10+Math.round(i/posts.length*40));
     await sleep(400);
   }
 
   IX.st(`⏳ Loading your followers...`); IX.pb(50);
-  let followers=[], after=&quot;&quot;, hasMore=true;
+  let followers=[], after="", hasMore=true;
   while (hasMore) {
-    const r = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/followers/?count=200${after?&quot;&amp;max_id=&quot;+after:&quot;&quot;}`,{headers:H}).then(r=&gt;r.json());
-    followers.push(...(r.users||[])); hasMore=!!r.next_max_id; after=r.next_max_id||&quot;&quot;;
+    const r = await fetch(`https://www.instagram.com/api/v1/friendships/${userId}/followers/?count=200${after?"&max_id="+after:""}`,{headers:H}).then(r=>r.json());
+    followers.push(...(r.users||[])); hasMore=!!r.next_max_id; after=r.next_max_id||"";
     await sleep(500);
   }
   IX.pb(100);
 
-  const ghosts = followers.filter(u=&gt;!engagers.has(u.pk));
+  const ghosts = followers.filter(u=>!engagers.has(u.pk));
   const ghostRate = ((ghosts.length/followers.length)*100).toFixed(1);
 
   if (!ghosts.length) {
-    IX.st(&#x27;✅ No ghost followers found!&#x27;);
-    IX.body(&#x27;&lt;div class=&quot;ix-empty&quot;&gt;&lt;div style=&quot;font-size:28px&quot;&gt;👻&lt;/div&gt;&lt;div&gt;NO GHOSTS DETECTED&lt;/div&gt;&lt;/div&gt;&#x27;);
+    IX.st('✅ No ghost followers found!');
+    IX.body('<div class="ix-empty"><div style="font-size:28px">👻</div><div>NO GHOSTS DETECTED</div></div>');
     return;
   }
 
-  IX.st(`Found ${ghosts.length} ghosts (${ghostRate}% ghost rate)`,&#x27;c-warn&#x27;);
-  IX.body(`&lt;div class=&quot;ix-sec&quot;&gt;${ghosts.length} GHOST FOLLOWERS — ${ghostRate}% GHOST RATE&lt;/div&gt;`);
-  ghosts.forEach(u =&gt; IX.add(`
-    &lt;div class=&quot;ix-urow&quot;&gt;
-      &lt;div class=&quot;ix-av&quot;&gt;${u.username[0]}&lt;/div&gt;
-      &lt;div class=&quot;ix-uinfo&quot;&gt;
-        &lt;div class=&quot;ix-uname&quot;&gt;@${u.username}&lt;/div&gt;
-        &lt;a class=&quot;ix-ulink&quot; href=&quot;https://instagram.com/${u.username}&quot; target=&quot;_blank&quot;&gt;VIEW ↗&lt;/a&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;`));
+  IX.st(`Found ${ghosts.length} ghosts (${ghostRate}% ghost rate)`,'c-warn');
+  IX.body(`<div class="ix-sec">${ghosts.length} GHOST FOLLOWERS — ${ghostRate}% GHOST RATE</div>`);
+  ghosts.forEach(u => IX.add(`
+    <div class="ix-urow">
+      <div class="ix-av">${u.username[0]}</div>
+      <div class="ix-uinfo">
+        <div class="ix-uname">@${u.username}</div>
+        <a class="ix-ulink" href="https://instagram.com/${u.username}" target="_blank">VIEW ↗</a>
+      </div>
+    </div>`));
 
-  IX.foot(`&lt;button class=&quot;ix-btn ix-by&quot; data-action=&quot;export&quot;&gt;⬇ EXPORT CSV&lt;/button&gt;`);
-  window._ixA.export = () =&gt; {
-    const csv = &#x27;username,profile_url\n&#x27; + ghosts.map(u=&gt;`@${u.username},https://instagram.com/${u.username}`).join(&#x27;\n&#x27;);
-    const a = Object.assign(document.createElement(&#x27;a&#x27;),{href:URL.createObjectURL(new Blob([csv],{type:&#x27;text/csv&#x27;})),download:&#x27;ghost_followers.csv&#x27;});
+  IX.foot(`<button class="ix-btn ix-by" data-action="export">⬇ EXPORT CSV</button>`);
+  window._ixA.export = () => {
+    const csv = 'username,profile_url\n' + ghosts.map(u=>`@${u.username},https://instagram.com/${u.username}`).join('\n');
+    const a = Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'ghost_followers.csv'});
     document.body.appendChild(a); a.click(); a.remove();
-    IX.st(&#x27;✅ CSV downloaded!&#x27;);
+    IX.st('✅ CSV downloaded!');
   };
 })();
-</code></pre>
-    </div>
-    <div class="warning-box">Ghost = no likes on your last 12 posts. Some real followers browse without liking — use this as a signal, not a verdict.</div>
-  </div>
-
-  <div class="tool-card">
-    <div class="tool-header">
-      <div class="tool-title-group">
-        <span class="tool-num">09</span>
-        <span class="tool-name">BANNED HASHTAG CHECKER</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <span class="ui-badge">✦ UI PANEL</span>
-        <span class="tool-badge badge-analytics">ANALYTICS</span>
-      </div>
-    </div>
-    <div class="tool-desc">Opens a panel with a <strong>text area for your hashtag list</strong> (one per line). Checks each one and shows a color-coded table: ✅ Safe, ⚠ Restricted, or ❌ Banned — with post counts for safe tags.</div>
-    <div class="steps">
-      <div class="step"><span class="step-num">01 ›</span> Paste into console — type or paste your hashtags in the panel (one per line)</div>
-      <div class="step"><span class="step-num">02 ›</span> Click Check — results appear row by row as they're scanned</div>
-    </div>
-    <div class="code-block">
-      <div class="code-topbar"><span class="code-lang">javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy Script</button></div>
-      <pre><code class="language-javascript">
-document.getElementById(&#x27;ignitx-root&#x27;)?.remove();
-const _r = document.createElement(&#x27;div&#x27;); _r.id = &#x27;ignitx-root&#x27;;
-_r.innerHTML = `&lt;style&gt;
-#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:&#x27;Courier New&#x27;,monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
+</script><script type="text/plain" id="s9">
+document.getElementById('ignitx-root')?.remove();
+const _r = document.createElement('div'); _r.id = 'ignitx-root';
+_r.innerHTML = `<style>
+#ignitx-panel{position:fixed;top:0;right:0;width:390px;height:100vh;background:#0d0d0d;border-left:1px solid rgba(0,255,136,.2);z-index:2147483647;display:flex;flex-direction:column;font-family:'Courier New',monospace;color:#c8f5d8;animation:ix-in .3s ease;box-shadow:-20px 0 60px rgba(0,0,0,.85);overflow:hidden}
 @keyframes ix-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 #ignitx-panel *{box-sizing:border-box}
 .ix-head{padding:13px 14px;border-bottom:1px solid rgba(0,255,136,.12);display:flex;align-items:center;gap:10px;background:#080808;flex-shrink:0}
@@ -1662,7 +1720,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-body::-webkit-scrollbar{width:3px}
 .ix-body::-webkit-scrollbar-thumb{background:rgba(0,255,136,.12)}
 .ix-foot{padding:11px 13px;border-top:1px solid rgba(0,255,136,.12);background:#080808;display:none;gap:7px;flex-shrink:0}
-.ix-btn{padding:9px 14px;font-family:&#x27;Courier New&#x27;,monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
+.ix-btn{padding:9px 14px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;border:1px solid;text-transform:uppercase;transition:.15s;flex:1}
 .ix-bg{background:rgba(0,255,136,.08);color:#00ff88;border-color:rgba(0,255,136,.35)}
 .ix-bg:hover{background:rgba(0,255,136,.18)}
 .ix-bg:disabled{opacity:.4;cursor:default}
@@ -1672,7 +1730,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-by:hover{background:rgba(255,204,0,.18)}
 .ix-input-wrap{padding:16px 14px;display:flex;flex-direction:column;gap:10px}
 .ix-label{font-size:9px;letter-spacing:2px;color:#3a5a45;margin-bottom:3px}
-.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:&#x27;Courier New&#x27;,monospace;font-size:12px;outline:none;transition:.15s}
+.ix-inp{width:100%;background:#141414;border:1px solid rgba(0,255,136,.2);color:#c8f5d8;padding:9px 11px;font-family:'Courier New',monospace;font-size:12px;outline:none;transition:.15s}
 .ix-inp:focus{border-color:rgba(0,255,136,.5)}
 .ix-inp.ix-ta{resize:vertical;min-height:90px}
 .ix-counter{text-align:center;padding:28px 14px 14px}
@@ -1692,7 +1750,7 @@ _r.innerHTML = `&lt;style&gt;
 .ix-ulink{font-size:9px;color:#3a5a45;text-decoration:none;letter-spacing:1px}
 .ix-ulink:hover{color:#00ff88}
 .ix-check{width:14px;height:14px;accent-color:#00ff88;cursor:pointer;flex-shrink:0}
-.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:&#x27;Courier New&#x27;,monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
+.ix-abtn{padding:4px 9px;font-size:9px;letter-spacing:1px;cursor:pointer;border:1px solid rgba(255,68,102,.3);background:0;color:#ff4466;font-family:'Courier New',monospace;transition:.12s;flex-shrink:0;text-transform:uppercase}
 .ix-abtn:hover{background:rgba(255,68,102,.1)}
 .ix-abtn.done{color:#3a5a45;border-color:rgba(58,90,69,.2);cursor:default}
 .ix-card{margin:13px;border:1px solid rgba(0,255,136,.15);background:#111}
@@ -1707,60 +1765,60 @@ _r.innerHTML = `&lt;style&gt;
 .ix-tcnt{font-size:9px;color:#3a5a45}
 .ix-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;color:#3a5a45;font-size:11px;letter-spacing:1px;gap:8px}
 .ix-sec{font-size:9px;color:#3a5a45;padding:7px 12px;letter-spacing:1px;border-bottom:1px solid rgba(0,255,136,.07);background:#0a0a0a;text-transform:uppercase}
-&lt;/style&gt;
-&lt;div id=&quot;ignitx-panel&quot;&gt;
-  &lt;div class=&quot;ix-head&quot;&gt;
-    &lt;div class=&quot;ix-logo&quot;&gt;IGNITX&lt;/div&gt;
-    &lt;div class=&quot;ix-tool&quot; id=&quot;ix-tool&quot;&gt;&lt;/div&gt;
-    &lt;button class=&quot;ix-x&quot; data-action=&quot;close&quot;&gt;&amp;#x2715;&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class=&quot;ix-status&quot; id=&quot;ix-st&quot;&gt;Initializing...&lt;/div&gt;
-  &lt;div class=&quot;ix-ptrack&quot;&gt;&lt;div class=&quot;ix-pbar&quot; id=&quot;ix-pb&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-body&quot; id=&quot;ix-body&quot;&gt;&lt;/div&gt;
-  &lt;div class=&quot;ix-foot&quot; id=&quot;ix-foot&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;`;
+</style>
+<div id="ignitx-panel">
+  <div class="ix-head">
+    <div class="ix-logo">IGNITX</div>
+    <div class="ix-tool" id="ix-tool"></div>
+    <button class="ix-x" data-action="close">&#x2715;</button>
+  </div>
+  <div class="ix-status" id="ix-st">Initializing...</div>
+  <div class="ix-ptrack"><div class="ix-pbar" id="ix-pb"></div></div>
+  <div class="ix-body" id="ix-body"></div>
+  <div class="ix-foot" id="ix-foot"></div>
+</div>`;
 document.body.appendChild(_r);
 
 // ── Single event delegation listener — NO inline onclick anywhere ──
 window._ixA = {};
-_r.addEventListener(&#x27;click&#x27;, function(e) {
-  const t = e.target.closest(&#x27;[data-action]&#x27;);
+_r.addEventListener('click', function(e) {
+  const t = e.target.closest('[data-action]');
   if (!t) return;
   const a = t.dataset.action;
-  if (a === &#x27;close&#x27;) { document.getElementById(&#x27;ignitx-root&#x27;)?.remove(); return; }
+  if (a === 'close') { document.getElementById('ignitx-root')?.remove(); return; }
   if (window._ixA[a]) window._ixA[a](t);
 });
 
 const IX = {
-  title: t =&gt; document.getElementById(&#x27;ix-tool&#x27;).textContent = t,
-  st: (t,c) =&gt; document.getElementById(&#x27;ix-st&#x27;).innerHTML = `&lt;span class=&quot;${c||&#x27;c-ok&#x27;}&quot;&gt;${t}&lt;/span&gt;`,
-  pb: p =&gt; document.getElementById(&#x27;ix-pb&#x27;).style.width = p + &#x27;%&#x27;,
-  body: h =&gt; document.getElementById(&#x27;ix-body&#x27;).innerHTML = h,
-  add: h =&gt; document.getElementById(&#x27;ix-body&#x27;).insertAdjacentHTML(&#x27;beforeend&#x27;, h),
-  foot: h =&gt; { const f = document.getElementById(&#x27;ix-foot&#x27;); f.innerHTML = h; f.style.display = h ? &#x27;flex&#x27; : &#x27;none&#x27;; },
-  $: id =&gt; document.getElementById(id),
+  title: t => document.getElementById('ix-tool').textContent = t,
+  st: (t,c) => document.getElementById('ix-st').innerHTML = `<span class="${c||'c-ok'}">${t}</span>`,
+  pb: p => document.getElementById('ix-pb').style.width = p + '%',
+  body: h => document.getElementById('ix-body').innerHTML = h,
+  add: h => document.getElementById('ix-body').insertAdjacentHTML('beforeend', h),
+  foot: h => { const f = document.getElementById('ix-foot'); f.innerHTML = h; f.style.display = h ? 'flex' : 'none'; },
+  $: id => document.getElementById(id),
 };
 
-(async () =&gt; {
-  IX.title(&#x27;BANNED HASHTAG CHECKER&#x27;);
+(async () => {
+  IX.title('BANNED HASHTAG CHECKER');
   const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-  const H = {&quot;x-ig-app-id&quot;:&quot;936619743392459&quot;,&quot;x-csrftoken&quot;:csrf,&quot;x-requested-with&quot;:&quot;XMLHttpRequest&quot;,&quot;x-ig-www-claim&quot;:sessionStorage.getItem(&quot;www-claim-v2&quot;)||&quot;0&quot;};
-  const sleep = ms =&gt; new Promise(r =&gt; setTimeout(r, ms));
+  const H = {"x-ig-app-id":"936619743392459","x-csrftoken":csrf,"x-requested-with":"XMLHttpRequest","x-ig-www-claim":sessionStorage.getItem("www-claim-v2")||"0"};
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  IX.st(&#x27;Paste your hashtag list below&#x27;);
+  IX.st('Paste your hashtag list below');
   IX.body(`
-    &lt;div class=&quot;ix-input-wrap&quot;&gt;
-      &lt;div class=&quot;ix-label&quot;&gt;HASHTAGS (one per line, no # needed)&lt;/div&gt;
-      &lt;textarea class=&quot;ix-inp ix-ta&quot; id=&quot;ix-tags&quot; placeholder=&quot;photography&amp;#10;fitness&amp;#10;love&quot;&gt;&lt;/textarea&gt;
-    &lt;/div&gt;`);
-  IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;check&quot;&gt;▶ CHECK HASHTAGS&lt;/button&gt;`);
+    <div class="ix-input-wrap">
+      <div class="ix-label">HASHTAGS (one per line, no # needed)</div>
+      <textarea class="ix-inp ix-ta" id="ix-tags" placeholder="photography&#10;fitness&#10;love"></textarea>
+    </div>`);
+  IX.foot(`<button class="ix-btn ix-bg" data-action="check">▶ CHECK HASHTAGS</button>`);
 
-  window._ixA.check = async () =&gt; {
-    const raw = (IX.$(&#x27;ix-tags&#x27;)?.value||&#x27;&#x27;).trim();
-    if (!raw) { IX.st(&#x27;⚠ Enter at least one hashtag&#x27;,&#x27;c-warn&#x27;); return; }
-    const tags = [...new Set(raw.split(/[\n,\s]+/).map(t=&gt;t.replace(/^#/,&#x27;&#x27;).trim()).filter(Boolean))];
-    IX.foot(&#x27;&#x27;);
-    IX.body(`&lt;div class=&quot;ix-sec&quot;&gt;CHECKING ${tags.length} HASHTAGS...&lt;/div&gt;`);
+  window._ixA.check = async () => {
+    const raw = (IX.$('ix-tags')?.value||'').trim();
+    if (!raw) { IX.st('⚠ Enter at least one hashtag','c-warn'); return; }
+    const tags = [...new Set(raw.split(/[\n,\s]+/).map(t=>t.replace(/^#/,'').trim()).filter(Boolean))];
+    IX.foot('');
+    IX.body(`<div class="ix-sec">CHECKING ${tags.length} HASHTAGS...</div>`);
 
     const results = {safe:[],restricted:[],banned:[]};
     let checked=0;
@@ -1769,108 +1827,32 @@ const IX = {
       IX.st(`⏳ Checking #${tag} (${checked}/${tags.length})`);
       IX.pb(Math.round(checked/tags.length*100));
       try {
-        const res = await fetch(`https://www.instagram.com/api/v1/tags/${tag}/info/`,{headers:H}).then(r=&gt;r.json());
+        const res = await fetch(`https://www.instagram.com/api/v1/tags/${tag}/info/`,{headers:H}).then(r=>r.json());
         if (!res.id) {
           results.banned.push(tag);
-          IX.add(`&lt;div class=&quot;ix-trow&quot;&gt;&lt;span class=&quot;ix-tname c-err&quot;&gt;#${tag}&lt;/span&gt;&lt;span class=&quot;ix-tbadge ix-t-ban&quot;&gt;BANNED&lt;/span&gt;&lt;/div&gt;`);
+          IX.add(`<div class="ix-trow"><span class="ix-tname c-err">#${tag}</span><span class="ix-tbadge ix-t-ban">BANNED</span></div>`);
         } else if (res.is_restricted_use) {
           results.restricted.push(tag);
-          IX.add(`&lt;div class=&quot;ix-trow&quot;&gt;&lt;span class=&quot;ix-tname c-warn&quot;&gt;#${tag}&lt;/span&gt;&lt;span class=&quot;ix-tbadge ix-t-rest&quot;&gt;RESTRICTED&lt;/span&gt;&lt;span class=&quot;ix-tcnt&quot;&gt;${(res.media_count||0).toLocaleString()} posts&lt;/span&gt;&lt;/div&gt;`);
+          IX.add(`<div class="ix-trow"><span class="ix-tname c-warn">#${tag}</span><span class="ix-tbadge ix-t-rest">RESTRICTED</span><span class="ix-tcnt">${(res.media_count||0).toLocaleString()} posts</span></div>`);
         } else {
           results.safe.push(tag);
-          IX.add(`&lt;div class=&quot;ix-trow&quot;&gt;&lt;span class=&quot;ix-tname c-ok&quot;&gt;#${tag}&lt;/span&gt;&lt;span class=&quot;ix-tbadge ix-t-safe&quot;&gt;SAFE&lt;/span&gt;&lt;span class=&quot;ix-tcnt&quot;&gt;${(res.media_count||0).toLocaleString()} posts&lt;/span&gt;&lt;/div&gt;`);
+          IX.add(`<div class="ix-trow"><span class="ix-tname c-ok">#${tag}</span><span class="ix-tbadge ix-t-safe">SAFE</span><span class="ix-tcnt">${(res.media_count||0).toLocaleString()} posts</span></div>`);
         }
       } catch {
         results.banned.push(tag);
-        IX.add(`&lt;div class=&quot;ix-trow&quot;&gt;&lt;span class=&quot;ix-tname c-err&quot;&gt;#${tag}&lt;/span&gt;&lt;span class=&quot;ix-tbadge ix-t-ban&quot;&gt;BANNED&lt;/span&gt;&lt;/div&gt;`);
+        IX.add(`<div class="ix-trow"><span class="ix-tname c-err">#${tag}</span><span class="ix-tbadge ix-t-ban">BANNED</span></div>`);
       }
       await sleep(800);
     }
     IX.st(`✅ ${results.safe.length} safe · ⚠ ${results.restricted.length} restricted · ❌ ${results.banned.length} banned`);
-    IX.foot(`&lt;button class=&quot;ix-btn ix-bg&quot; data-action=&quot;again&quot;&gt;↺ CHECK AGAIN&lt;/button&gt;`);
-    window._ixA.again = () =&gt; { window.location.reload(); };
+    IX.foot(`<button class="ix-btn ix-bg" data-action="again">↺ CHECK AGAIN</button>`);
+    window._ixA.again = () => { window.location.reload(); };
   };
 })();
-</code></pre>
-    </div>
-  </div>
-
-</section>
-
-<!-- ══════════════ SAFETY ══════════════ -->
-<section class="tool-section" id="tab-safety">
-  <div class="safety-hero">
-    <div class="safety-hero-icon">⚠</div>
-    <div>
-      <div class="safety-hero-title">READ BEFORE YOU RUN ANYTHING</div>
-      <div class="safety-hero-sub">IGNITX operates through your own browser session. Instagram sees every action as coming directly from you. Understanding these limits protects your account.</div>
-    </div>
-  </div>
-  <div class="safety-grid">
-    <div class="safety-card risk-low"><div class="risk-badge">LOW RISK</div><div class="risk-title">Read-Only Tools</div><div class="risk-item">✓ Non-Followers Detector</div><div class="risk-item">✓ Export to CSV</div><div class="risk-item">✓ Engagement Rate Calculator</div><div class="risk-item">✓ Ghost Follower Finder</div><div class="risk-item">✓ Banned Hashtag Checker</div><div class="risk-desc">These scripts only <strong>fetch and display data</strong>. No write actions are performed.</div></div>
-    <div class="safety-card risk-mid"><div class="risk-badge">MEDIUM RISK</div><div class="risk-title">Like Tools</div><div class="risk-item">~ Like Tagged Posts</div><div class="risk-item">~ Like Posts by Hashtag</div><div class="risk-desc">Instagram allows roughly <strong>60 likes per hour</strong>. Scripts use 4-second delays. Do not run both like tools back-to-back.</div></div>
-    <div class="safety-card risk-high"><div class="risk-badge">HIGHER RISK</div><div class="risk-title">Follow / Unfollow Tools</div><div class="risk-item">! Follow a User's Followings</div><div class="risk-item">! Mass Unfollow Non-Followers</div><div class="risk-desc">Follow/unfollow actions are Instagram's most watched behavior. Stick to the limits below.</div></div>
-  </div>
-  <div class="limits-block">
-    <div class="limits-title">// DAILY ACTION LIMITS</div>
-    <div class="limits-table">
-      <div class="limit-row limit-header"><span>ACTION</span><span>PER HOUR</span><span>PER DAY</span><span>CONSEQUENCE</span></div>
-      <div class="limit-row"><span>❤ Likes</span><span class="safe">60</span><span class="safe">500</span><span>Temp like-block (24h)</span></div>
-      <div class="limit-row"><span>➕ Follows</span><span class="warn">100</span><span class="warn">200</span><span>Action block → ban</span></div>
-      <div class="limit-row"><span>➖ Unfollows</span><span class="warn">100</span><span class="warn">200</span><span>Action block → ban</span></div>
-      <div class="limit-row"><span>🔁 Follow+Unfollow combined</span><span class="danger">100</span><span class="danger">200 total</span><span>These share the same bucket</span></div>
-    </div>
-  </div>
-  <div class="rules-block">
-    <div class="limits-title">// RULES TO FOLLOW</div>
-    <div class="rules-grid">
-      <div class="rule-item"><div class="rule-num">01</div><div><strong>Never run two action scripts at once.</strong> Parallel actions multiply your rate and trigger bot detection faster.</div></div>
-      <div class="rule-item"><div class="rule-num">02</div><div><strong>New accounts (under 3 months) should use read-only tools only.</strong> New accounts are flagged far more aggressively.</div></div>
-      <div class="rule-item"><div class="rule-num">03</div><div><strong>Wait at least 1 hour between action sessions.</strong> Instagram tracks behavioral patterns over time, not just single sessions.</div></div>
-      <div class="rule-item"><div class="rule-num">04</div><div><strong>If you get an action block, stop immediately.</strong> A temporary block is a warning. Pushing through escalates it to a permanent ban.</div></div>
-      <div class="rule-item"><div class="rule-num">05</div><div><strong>Disable your ad blocker on instagram.com.</strong> Ad blockers interfere with the session tokens scripts need to authenticate.</div></div>
-      <div class="rule-item"><div class="rule-num">06</div><div><strong>You are fully responsible.</strong> IGNITX runs in your own browser. No data is sent anywhere. But Instagram can still detect patterns.</div></div>
-    </div>
-  </div>
-  <div class="disclaimer-box">
-    <div class="disclaimer-title">// LEGAL DISCLAIMER</div>
-    <p>IGNITX is an independent open tool created for educational and personal productivity purposes. It is not affiliated with, endorsed by, or connected to Instagram or Meta in any way. Use of automation tools may violate Instagram's Terms of Service. By using these scripts you accept full responsibility for any consequences to your account. The developer (Keremify) assumes no liability.</p>
-  </div>
-</section>
-
-</main>
-
-<footer>
-  <div class="footer-inner">
-    <span class="footer-logo">IGNITX</span>
-    <span class="footer-sep">—</span>
-    <span>browser console toolkit</span>
-    <span class="footer-sep">—</span>
-    <span>made with ⌨ by <strong class="keremify">KEREMIFY</strong></span>
-    <span class="footer-sep">—</span>
-    <span>use responsibly</span>
-  </div>
-  <div class="footer-note">not affiliated with instagram or meta · v2.0.0</div>
-</footer>
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-<script>
-  function showTab(name, btn) {
-    document.querySelectorAll('.tool-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  function copyCode(btn) {
-    const code = btn.closest('.tool-card').querySelector('code');
-    navigator.clipboard.writeText(code.textContent).then(() => {
-      btn.textContent = '✓ Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'Copy Script'; btn.classList.remove('copied'); }, 2000);
-    });
-  }
-</script>
+<script src="js/main.js"></script>
 </body>
 </html>
