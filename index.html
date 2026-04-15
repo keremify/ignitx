@@ -729,7 +729,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s1"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s1"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
     <div class="tool-card" data-reveal data-delay="2">
@@ -755,7 +755,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s2"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s2"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
     <div class="tool-card" data-reveal data-delay="3">
@@ -781,7 +781,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s3"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s3"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
     <div class="tool-card" data-reveal data-delay="0">
@@ -807,7 +807,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s4"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s4"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
   </div>
@@ -837,7 +837,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s5"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s5"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
     <div class="tool-card" data-reveal data-delay="2">
@@ -863,7 +863,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s6"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s6"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
   </div>
@@ -893,7 +893,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s7"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s7"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
     <div class="tool-card" data-reveal data-delay="0">
@@ -919,7 +919,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s8"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s8"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
     <div class="tool-card" data-reveal data-delay="1">
@@ -945,7 +945,7 @@ footer {
       Copy Script
     </button>
   </div>
-  <pre class="code-pre" data-src="s9"><code class="code-el language-javascript"></code></pre>
+  <pre class="code-pre" data-script-id="s9"><code class="code-el language-javascript"></code></pre>
 </div>
 </div>
   </div>
@@ -2515,7 +2515,10 @@ if (firstTab) firstTab.click();
 function copyCode(btn) {
   const card  = btn.closest('.tool-card');
   const pre   = card.querySelector('.code-pre');
-  const text  = pre ? pre.textContent : '';
+  // Read from the raw source tag — immune to Prism processing
+  const srcId = pre ? pre.dataset.scriptId : null;
+  const src   = srcId ? document.getElementById(srcId) : null;
+  const text  = src ? src.textContent.trim() : (pre ? pre.textContent : '');
   navigator.clipboard.writeText(text).then(() => {
     btn.classList.add('copied');
     btn.innerHTML = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,8 6,12 14,4"/></svg> Copied!`;
@@ -2537,7 +2540,7 @@ document.querySelectorAll('[data-scroll]').forEach(el => {
 
 // ── Populate code blocks from <script type="text/plain"> ──
 document.querySelectorAll('.code-pre').forEach(pre => {
-  const id = pre.dataset.src;
+  const id = pre.dataset.scriptId;
   const src = document.getElementById(id);
   if (!src) return;
   const code = pre.querySelector('code');
