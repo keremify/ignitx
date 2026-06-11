@@ -101,7 +101,7 @@ ignitx/
 
 ## 🌐 Live Site
 
-👉 **[Soon](https://instagram.com/keremify)**
+👉 **[Click Here](https://keremify.github.io/ignitx/)**
 
 ---
 
